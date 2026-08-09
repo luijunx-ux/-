@@ -109,3 +109,21 @@ class LifeProfile {
   final WuyunLiuqiInfo wuyunLiuqi;
   final String disclaimer;
 }
+
+class DailyAdvice {
+  const DailyAdvice({
+    required this.targetDate,
+    required this.items,
+    required this.disclaimer,
+  });
+
+  factory DailyAdvice.fromJson(Map<String, dynamic> json) => DailyAdvice(
+        targetDate: DateTime.parse(json['target_date'] as String),
+        items: (json['advice'] as List<dynamic>).cast<String>(),
+        disclaimer: json['disclaimer'] as String,
+      );
+
+  final DateTime targetDate;
+  final List<String> items;
+  final String disclaimer;
+}

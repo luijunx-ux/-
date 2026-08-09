@@ -82,4 +82,38 @@ void main() {
       ),
     );
   });
+
+  test('requests daily advice for the selected date', () async {
+    final MockClient transport = MockClient((http.Request request) async {
+      expect(request.url.path, '/api/v1/advice/daily');
+      final Map<String, dynamic> payload =
+          jsonDecode(request.body) as Map<String, dynamic>;
+      expect(payload['target_date'], '2026-08-09');
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode(<String, dynamic>{
+            'target_date': '2026-08-09',
+            'advice': <String>['保持规律作息。', '安排短暂离屏休息。'],
+            'disclaimer': '仅供参考',
+          }),
+        ),
+        200,
+        headers: <String, String>{
+          'content-type': 'application/json; charset=utf-8',
+        },
+      );
+    });
+    final ProfileApiClient client = ProfileApiClient(
+      client: transport,
+      baseUrl: 'https://example.test',
+    );
+
+    final DailyAdvice advice = await client.getDailyAdvice(
+      input,
+      DateTime(2026, 8, 9),
+    );
+
+    expect(advice.items, hasLength(2));
+    expect(advice.targetDate, DateTime(2026, 8, 9));
+  });
 }

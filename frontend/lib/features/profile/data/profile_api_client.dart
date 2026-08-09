@@ -46,6 +46,44 @@ class ProfileApiClient {
     return LifeProfile.fromJson(decoded);
   }
 
+  Future<DailyAdvice> getDailyAdvice(
+    BirthInput input,
+    DateTime targetDate,
+  ) async {
+    final Uri uri = Uri.parse('$_baseUrl/api/v1/advice/daily');
+    final Map<String, Object> payload = <String, Object>{
+      ...input.toJson(),
+      'target_date': _dateOnly(targetDate),
+    };
+    final http.Response response;
+    try {
+      response = await _client
+          .post(
+            uri,
+            headers: const <String, String>{'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 15));
+    } on Exception {
+      throw const ProfileApiException('无法获取每日建议，请检查网络后重试。');
+    }
+
+    final Object? decoded = jsonDecode(response.body);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw ProfileApiException(_errorMessage(decoded));
+    }
+    if (decoded is! Map<String, dynamic>) {
+      throw const ProfileApiException('服务返回了无法识别的数据。');
+    }
+    return DailyAdvice.fromJson(decoded);
+  }
+
+  String _dateOnly(DateTime value) {
+    final String month = value.month.toString().padLeft(2, '0');
+    final String day = value.day.toString().padLeft(2, '0');
+    return '${value.year}-$month-$day';
+  }
+
   String _errorMessage(Object? body) {
     if (body is Map<String, dynamic> && body['detail'] is String) {
       return body['detail'] as String;

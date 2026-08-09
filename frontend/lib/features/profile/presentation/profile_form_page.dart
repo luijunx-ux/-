@@ -72,21 +72,25 @@ class _ProfileFormPageState extends State<ProfileFormPage> {
     }
     setState(() => _submitting = true);
     try {
-      final LifeProfile profile = await widget.apiClient.generateProfile(
-        BirthInput(
-          occurredAt: _birthDateTime!,
-          placeName: _placeController.text.trim(),
-          latitude: double.parse(_latitudeController.text),
-          longitude: double.parse(_longitudeController.text),
-          timezone: _timezoneController.text.trim(),
-        ),
+      final BirthInput birthInput = BirthInput(
+        occurredAt: _birthDateTime!,
+        placeName: _placeController.text.trim(),
+        latitude: double.parse(_latitudeController.text),
+        longitude: double.parse(_longitudeController.text),
+        timezone: _timezoneController.text.trim(),
       );
+      final LifeProfile profile =
+          await widget.apiClient.generateProfile(birthInput);
       if (!mounted) {
         return;
       }
       await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(
-          builder: (_) => ProfileResultPage(profile: profile),
+          builder: (_) => ProfileResultPage(
+            profile: profile,
+            birthInput: birthInput,
+            apiClient: widget.apiClient,
+          ),
         ),
       );
     } on ProfileApiException catch (error) {

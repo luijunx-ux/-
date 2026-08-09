@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:tianrenlu/features/advice/presentation/daily_advice_page.dart';
+import 'package:tianrenlu/features/profile/data/profile_api_client.dart';
 import 'package:tianrenlu/features/profile/domain/profile_models.dart';
 
 class ProfileResultPage extends StatelessWidget {
-  const ProfileResultPage({required this.profile, super.key});
+  const ProfileResultPage({
+    required this.profile,
+    required this.birthInput,
+    required this.apiClient,
+    super.key,
+  });
 
   final LifeProfile profile;
+  final BirthInput birthInput;
+  final ProfileApiClient apiClient;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +51,19 @@ class ProfileResultPage extends StatelessWidget {
               ),
             ),
           ],
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                builder: (_) => DailyAdvicePage(
+                  apiClient: apiClient,
+                  birthInput: birthInput,
+                ),
+              ),
+            ),
+            icon: const Icon(Icons.auto_awesome_outlined),
+            label: const Text('查看每日生命建议'),
+          ),
           const SizedBox(height: 24),
           Text(
             profile.disclaimer,
