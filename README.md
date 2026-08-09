@@ -1,6 +1,6 @@
 # 天人律 AI 生命节律 Agent
 
-面向移动端的 AI 生命节律应用工程。本阶段仅完成工程初始化，不包含业务逻辑或功能实现。
+天人律 AI 生命节律 Agent APP，面向移动端提供个人生命档案与日常节律参考。
 
 ## 产品范围
 
@@ -34,10 +34,10 @@ tests/          跨模块集成与端到端测试
 
 1. 复制根目录 `.env.example` 为 `.env`，按本地环境填写配置；不要提交 `.env`。
 2. 阅读 `docs/development-standards.md`。
-3. 在后续阶段分别初始化 Flutter 与 FastAPI 的依赖清单和可运行入口。
+3. 进入 `backend/` 安装开发依赖：`python -m pip install -e ".[dev]"`。
 4. 所有密钥通过环境变量或密钥管理服务提供，不写入源码。
 
 ## 当前状态
 
-阶段一：工程初始化。业务代码、数据库模型、算法、API 与 UI 均尚未实现。
-
+后端 MVP 已实现生命档案生成、星座与基础五运六气计算、每日建议、PostgreSQL
+持久化及 Alembic 迁移。Flutter 客户端和 LLM + Agent + RAG 尚待开发。
