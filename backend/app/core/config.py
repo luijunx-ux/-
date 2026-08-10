@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     database_url: str = "postgresql+asyncpg://tianrenlu:change_me@localhost:5432/tianrenlu"
     database_echo: bool = False
+    redis_url: str | None = None
+    redis_timeout_seconds: float = 1.5
+    auth_rate_limit_attempts: int = 5
+    auth_rate_limit_window_seconds: int = 900
     geocoding_base_url: str = "https://nominatim.openstreetmap.org"
     geocoding_user_agent: str = "Tianrenlu/0.1 (+https://github.com/luijunx-ux/-)"
     geocoding_cache_seconds: int = 86400
@@ -42,6 +46,8 @@ class Settings(BaseSettings):
         )
         if any(value.startswith(("development-only", "replace_with")) for value in secrets):
             raise ValueError("生产类环境必须配置独立的 JWT 与安全标识密钥")
+        if self.redis_url is None:
+            raise ValueError("非开发环境必须配置 REDIS_URL")
         return self
 
     model_config = SettingsConfigDict(

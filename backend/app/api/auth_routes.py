@@ -12,7 +12,7 @@ from app.application.auth_service import (
     InvalidCredentialsError,
     InvalidRefreshTokenError,
 )
-from app.core.rate_limit import SlidingWindowRateLimiter
+from app.core.rate_limit import RateLimiterUnavailableError, get_auth_rate_limiter
 from app.schemas.auth import (
     ActionTokenRequest,
     AuthenticationResponse,
@@ -25,11 +25,15 @@ from app.schemas.auth import (
 )
 
 router = APIRouter(prefix="/api/v1")
-_auth_limiter = SlidingWindowRateLimiter()
-
-
-def _check_rate_limit(email: str) -> None:
-    if not _auth_limiter.allow(email.strip().lower()):
+async def _check_rate_limit(email: str) -> None:
+    try:
+        allowed = await get_auth_rate_limiter().allow(email.strip().lower())
+    except RateLimiterUnavailableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="认证服务暂时不可用，请稍后再试",
+        ) from exc
+    if not allowed:
         raise HTTPException(
             status_code=429,
             detail="请求过于频繁，请稍后再试",
@@ -56,7 +60,7 @@ async def register(
     payload: CredentialsRequest,
     service: AuthServiceDependency,
 ) -> AuthenticationResponse:
-    _check_rate_limit(str(payload.email))
+    await _check_rate_limit(str(payload.email))
     try:
         result = await service.register(str(payload.email), payload.password)
     except EmailAlreadyRegisteredError as exc:
@@ -69,7 +73,7 @@ async def login(
     payload: CredentialsRequest,
     service: AuthServiceDependency,
 ) -> AuthenticationResponse:
-    _check_rate_limit(str(payload.email))
+    await _check_rate_limit(str(payload.email))
     try:
         result = await service.authenticate(str(payload.email), payload.password)
     except InvalidCredentialsError as exc:
@@ -107,7 +111,7 @@ async def logout_session(
 async def request_email_verification(
     payload: EmailActionRequest, service: AuthServiceDependency
 ) -> MessageResponse:
-    _check_rate_limit(str(payload.email))
+    await _check_rate_limit(str(payload.email))
     await service.request_email_verification(str(payload.email))
     return MessageResponse(message="如果账户存在，验证邮件将很快发送")
 
@@ -127,7 +131,7 @@ async def confirm_email_verification(
 async def request_password_reset(
     payload: EmailActionRequest, service: AuthServiceDependency
 ) -> MessageResponse:
-    _check_rate_limit(str(payload.email))
+    await _check_rate_limit(str(payload.email))
     await service.request_password_reset(str(payload.email))
     return MessageResponse(message="如果账户存在，重置邮件将很快发送")
 

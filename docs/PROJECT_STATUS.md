@@ -4,7 +4,7 @@
 当前版本：`0.1.0`
 当前分支：`main`
 远程仓库：`git@github.com:luijunx-ux/-.git`
-远程同步提交：`c64e678490c83f62f0fee9a2c3b8863ea6b48ea7`
+远程同步提交：`c8fe930`
 
 ## 一、项目目标
 
@@ -39,7 +39,8 @@
 - 并发 401 合并为一次刷新，避免 Refresh Token 被重复消费。
 - 退出登录撤销当前 Refresh Token。
 - 永久注销账户并级联删除生命档案、建议历史和会话。
-- 注册、登录及账户邮件请求采用单实例滑动窗口限流。
+- 注册、登录及账户邮件请求采用 Redis 原子滑动窗口分布式限流，Redis 键仅包含邮箱 SHA-256 哈希。
+- 开发环境允许在 Redis 不可用时降级到内存限流；非开发环境必须配置 Redis，服务不可用时认证请求返回 503。
 - 登录成功和失败事件入库，审计记录只包含邮箱哈希。
 
 ### 3.2 邮箱验证与密码重置
@@ -229,7 +230,7 @@ Flutter `analyze` 在包含中文字符的 Windows 工作区路径中会触发 A
 1. 配置真实 SMTP 账户并完成测试邮件投递。
 2. 配置正式 Web 域名、HTTPS 和 `APP_PUBLIC_URL`。
 3. 为 Android/iOS 配置 Universal Link、App Link 和密码重置原生页面唤起。
-4. 把单实例内存限流替换为 Redis 分布式限流。
+4. 为 Redis 配置生产级认证、TLS、监控告警与容量基线。
 5. 增加 Refresh Token 会话设备列表和“退出其他设备”。
 6. 安装 Android SDK，生成并签名 Android 测试 APK。
 7. 补充 UI 自动化、真实 PostgreSQL 集成测试和并发缓存测试。
