@@ -39,5 +39,8 @@ tests/          跨模块集成与端到端测试
 
 ## 当前状态
 
-后端 MVP 已实现生命档案生成、星座与基础五运六气计算、每日建议、PostgreSQL
-持久化及 Alembic 迁移。Flutter 客户端和 LLM + Agent + RAG 尚待开发。
+Flutter、FastAPI、PostgreSQL、账户安全、生命档案、每日建议缓存、LLM Agent、RAG、
+Web Demo 与六段数据库迁移均已建立。当前完成情况、运行方式、验证结果和后续计划见：
+
+- [项目状态总览](docs/PROJECT_STATUS.md)
+- [Web Demo 试用说明](docs/DEMO.md)
