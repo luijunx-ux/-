@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:tianrenlu/features/auth/data/auth_api_client.dart';
+import 'package:tianrenlu/features/auth/data/authenticated_http_client.dart';
 
 void main() {
   test('registers and parses the authenticated user', () async {
@@ -89,5 +90,56 @@ void main() {
         ),
       ),
     );
+  });
+
+  test('refreshes once after 401 and retries with the rotated token', () async {
+    int calls = 0;
+    int refreshes = 0;
+    final MockClient transport = MockClient((http.Request request) async {
+      calls++;
+      if (calls == 1) {
+        expect(request.headers['authorization'], 'Bearer expired-token');
+        return http.Response('unauthorized', 401);
+      }
+      expect(request.headers['authorization'], 'Bearer rotated-token');
+      return http.Response('ok', 200);
+    });
+    final AuthenticatedHttpClient client = AuthenticatedHttpClient(
+      inner: transport,
+      tokenProvider: () async => 'expired-token',
+      tokenRefresher: () async {
+        refreshes++;
+        return 'rotated-token';
+      },
+    );
+
+    final http.Response response =
+        await client.get(Uri.parse('https://example.test/protected'));
+
+    expect(response.statusCode, 200);
+    expect(response.body, 'ok');
+    expect(calls, 2);
+    expect(refreshes, 1);
+  });
+
+  test('confirms email verification and password reset action tokens',
+      () async {
+    final List<Map<String, dynamic>> payloads = <Map<String, dynamic>>[];
+    final AuthApiClient client = AuthApiClient(
+      client: MockClient((http.Request request) async {
+        payloads.add(jsonDecode(request.body) as Map<String, dynamic>);
+        return http.Response('{}', 200);
+      }),
+      baseUrl: 'https://example.test',
+    );
+
+    await client.confirmEmailVerification('verification-token-value-123456');
+    await client.resetPassword(
+      'password-reset-token-value-123456',
+      'new-secure-password',
+    );
+
+    expect(payloads.first['token'], 'verification-token-value-123456');
+    expect(payloads.last['new_password'], 'new-secure-password');
   });
 }

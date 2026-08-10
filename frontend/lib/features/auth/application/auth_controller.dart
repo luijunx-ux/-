@@ -13,6 +13,7 @@ class AuthController extends ChangeNotifier {
   String? _token;
   String? _refreshToken;
   AuthUser? _user;
+  Future<String?>? _refreshInFlight;
 
   String? get token => _token;
   AuthUser? get user => _user;
@@ -50,6 +51,32 @@ class AuthController extends ChangeNotifier {
   Future<void> requestEmailVerification() async {
     final String? email = _user?.email;
     if (email != null) await _api.requestEmailVerification(email);
+  }
+
+  Future<String?> refreshAccessToken() {
+    final Future<String?>? active = _refreshInFlight;
+    if (active != null) return active;
+    final Future<String?> refresh = _performRefresh();
+    _refreshInFlight = refresh;
+    refresh.whenComplete(() => _refreshInFlight = null);
+    return refresh;
+  }
+
+  Future<String?> _performRefresh() async {
+    final String? refreshToken = _refreshToken;
+    if (refreshToken == null) return null;
+    try {
+      final AuthSession session = await _api.refresh(refreshToken);
+      await _accept(session);
+      return session.accessToken;
+    } on AuthApiException {
+      await _store.clear();
+      _token = null;
+      _refreshToken = null;
+      _user = null;
+      notifyListeners();
+      return null;
+    }
   }
 
   Future<void> logout() async {

@@ -47,6 +47,28 @@ class AuthApiClient {
   Future<void> requestEmailVerification(String email) =>
       _emailAction('/api/v1/auth/email-verification/request', email);
 
+  Future<void> confirmEmailVerification(String token) => _confirmAction(
+        '/api/v1/auth/email-verification/confirm',
+        <String, String>{'token': token},
+      );
+
+  Future<void> resetPassword(String token, String newPassword) =>
+      _confirmAction(
+        '/api/v1/auth/password-reset/confirm',
+        <String, String>{'token': token, 'new_password': newPassword},
+      );
+
+  Future<void> _confirmAction(String path, Map<String, String> payload) async {
+    final http.Response response = await _send(
+      () => _client.post(
+        Uri.parse('$_baseUrl$path'),
+        headers: const <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      ),
+    );
+    _ensureSuccess(response, _decode(response));
+  }
+
   Future<void> _emailAction(String path, String email) async {
     final http.Response response = await _send(
       () => _client.post(

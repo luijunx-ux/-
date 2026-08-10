@@ -9,7 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.advice_agent import DailyAdviceAgent
 from app.application.auth_service import AuthService
-from app.application.email_sender import DevelopmentLogEmailSender
+from app.application.email_sender import (
+    AccountEmailSender,
+    DevelopmentLogEmailSender,
+    SmtpAccountEmailSender,
+)
 from app.application.location_service import LocationSearchService
 from app.core.config import get_settings
 from app.core.security import PasswordService, TokenService
@@ -59,6 +63,23 @@ UserRepositoryDependency = Annotated[UserRepository, Depends(get_user_repository
 
 def get_auth_service(repository: UserRepositoryDependency) -> AuthService:
     settings = get_settings()
+    email_sender: AccountEmailSender | None = None
+    if settings.smtp_host and settings.smtp_from_email:
+        email_sender = SmtpAccountEmailSender(
+            host=settings.smtp_host,
+            port=settings.smtp_port,
+            username=settings.smtp_username,
+            password=(
+                settings.smtp_password.get_secret_value()
+                if settings.smtp_password is not None
+                else None
+            ),
+            from_email=settings.smtp_from_email,
+            public_url=settings.app_public_url,
+            use_tls=settings.smtp_use_tls,
+        )
+    elif settings.app_env.lower() == "development":
+        email_sender = DevelopmentLogEmailSender(settings.app_public_url)
     return AuthService(
         repository=repository,
         passwords=PasswordService(),
@@ -69,9 +90,7 @@ def get_auth_service(repository: UserRepositoryDependency) -> AuthService:
             access_token_minutes=settings.jwt_access_token_minutes,
         ),
         refresh_token_days=settings.refresh_token_days,
-        email_sender=(
-            DevelopmentLogEmailSender() if settings.app_env.lower() == "development" else None
-        ),
+        email_sender=email_sender,
     )
 
 

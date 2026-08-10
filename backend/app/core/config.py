@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     jwt_audience: str = "tianrenlu-mobile"
     jwt_access_token_minutes: int = 30
     refresh_token_days: int = 30
+    app_public_url: str = "http://127.0.0.1:8080"
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: SecretStr | None = None
+    smtp_from_email: str | None = None
+    smtp_use_tls: bool = True
     safety_identifier_secret: SecretStr = SecretStr("development-only-safety-id-secret-change-me")
 
     @model_validator(mode="after")
