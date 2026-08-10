@@ -49,6 +49,7 @@ node_modules/
 
 # Logs and local data
 *.log
+artifacts/
 tmp/
 temp/
 data/local/
@@ -56,4 +57,3 @@ data/local/
 # Test artifacts
 test-results/
 playwright-report/
-

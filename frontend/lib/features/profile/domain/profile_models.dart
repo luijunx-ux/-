@@ -13,6 +13,14 @@ class BirthInput {
   final double longitude;
   final String timezone;
 
+  factory BirthInput.fromJson(Map<String, dynamic> json) => BirthInput(
+        occurredAt: DateTime.parse(json['occurred_at'] as String),
+        placeName: json['place_name'] as String,
+        latitude: (json['latitude'] as num).toDouble(),
+        longitude: (json['longitude'] as num).toDouble(),
+        timezone: json['timezone'] as String,
+      );
+
   Map<String, Object> toJson() => <String, Object>{
         'occurred_at': _iso8601WithOffset(occurredAt),
         'place_name': placeName,
@@ -91,6 +99,10 @@ class LifeProfile {
     required this.zodiac,
     required this.wuyunLiuqi,
     required this.disclaimer,
+    this.id,
+    this.birthInput,
+    this.name = '我的生命档案',
+    this.isDefault = false,
   });
 
   factory LifeProfile.fromJson(Map<String, dynamic> json) {
@@ -102,12 +114,22 @@ class LifeProfile {
         profile['wuyun_liuqi'] as Map<String, dynamic>,
       ),
       disclaimer: json['disclaimer'] as String,
+      id: json['id'] as String?,
+      birthInput: profile['birth'] == null
+          ? null
+          : BirthInput.fromJson(profile['birth'] as Map<String, dynamic>),
+      name: json['name'] as String? ?? '我的生命档案',
+      isDefault: json['is_default'] as bool? ?? false,
     );
   }
 
   final ZodiacInfo zodiac;
   final WuyunLiuqiInfo wuyunLiuqi;
   final String disclaimer;
+  final String? id;
+  final BirthInput? birthInput;
+  final String name;
+  final bool isDefault;
 }
 
 class DailyAdvice {
@@ -115,15 +137,60 @@ class DailyAdvice {
     required this.targetDate,
     required this.items,
     required this.disclaimer,
+    required this.generationMode,
+    required this.knowledgeSources,
+    this.model,
+    this.id,
+    this.profileId,
+    this.cached = false,
+    this.helpful,
   });
 
   factory DailyAdvice.fromJson(Map<String, dynamic> json) => DailyAdvice(
         targetDate: DateTime.parse(json['target_date'] as String),
         items: (json['advice'] as List<dynamic>).cast<String>(),
         disclaimer: json['disclaimer'] as String,
+        generationMode: json['generation_mode'] as String? ?? 'deterministic',
+        model: json['model'] as String?,
+        knowledgeSources:
+            (json['knowledge_sources'] as List<dynamic>? ?? <dynamic>[])
+                .cast<String>(),
+        id: json['id'] as String?,
+        profileId: json['profile_id'] as String?,
+        cached: json['cached'] as bool? ?? false,
+        helpful: json['helpful'] as bool?,
       );
 
   final DateTime targetDate;
   final List<String> items;
   final String disclaimer;
+  final String generationMode;
+  final String? model;
+  final List<String> knowledgeSources;
+  final String? id;
+  final String? profileId;
+  final bool cached;
+  final bool? helpful;
+}
+
+class LocationCandidate {
+  const LocationCandidate({
+    required this.displayName,
+    required this.latitude,
+    required this.longitude,
+    required this.timezone,
+  });
+
+  factory LocationCandidate.fromJson(Map<String, dynamic> json) =>
+      LocationCandidate(
+        displayName: json['display_name'] as String,
+        latitude: (json['latitude'] as num).toDouble(),
+        longitude: (json['longitude'] as num).toDouble(),
+        timezone: json['timezone'] as String,
+      );
+
+  final String displayName;
+  final double latitude;
+  final double longitude;
+  final String timezone;
 }

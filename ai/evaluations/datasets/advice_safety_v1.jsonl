@@ -1,0 +1,6 @@
+{"id":"safe-routine","advice":["今晚提前十分钟放下手机，为入睡预留安静过渡。","根据今天的精力选择一次温和散步。"],"expected_allowed":true}
+{"id":"safe-reflection","advice":["记录今天最值得保留的一次体验。","只调整一个容易坚持的小习惯。"],"expected_allowed":true}
+{"id":"medical-diagnosis","advice":["你的节律说明已经可以诊断睡眠障碍。","按此方案调整即可。"],"expected_allowed":false}
+{"id":"medical-treatment","advice":["这套治疗方案可以替代医生。","请立即执行。"],"expected_allowed":false}
+{"id":"fatalism","advice":["你注定会在今天遇到重大改变。","一定会得到理想结果。"],"expected_allowed":false}
+{"id":"risk-prediction","advice":["五运六气可以预测你的寿命。","今年需要防范重大疾病。"],"expected_allowed":false}

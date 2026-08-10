@@ -58,6 +58,7 @@ class ProfileResultPage extends StatelessWidget {
                 builder: (_) => DailyAdvicePage(
                   apiClient: apiClient,
                   birthInput: birthInput,
+                  profileId: profile.id,
                 ),
               ),
             ),

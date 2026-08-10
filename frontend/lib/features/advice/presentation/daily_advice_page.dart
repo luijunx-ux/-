@@ -6,11 +6,13 @@ class DailyAdvicePage extends StatefulWidget {
   const DailyAdvicePage({
     required this.apiClient,
     required this.birthInput,
+    this.profileId,
     super.key,
   });
 
   final ProfileApiClient apiClient;
   final BirthInput birthInput;
+  final String? profileId;
 
   @override
   State<DailyAdvicePage> createState() => _DailyAdvicePageState();
@@ -53,6 +55,7 @@ class _DailyAdvicePageState extends State<DailyAdvicePage> {
       final DailyAdvice advice = await widget.apiClient.getDailyAdvice(
         widget.birthInput,
         _selectedDate,
+        profileId: widget.profileId,
       );
       if (mounted) {
         setState(() => _advice = advice);
@@ -92,6 +95,50 @@ class _DailyAdvicePageState extends State<DailyAdvicePage> {
             else if (_error != null)
               _ErrorCard(message: _error!, onRetry: _loadAdvice)
             else if (_advice != null) ...<Widget>[
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: ListTile(
+                  leading: Icon(
+                    _advice!.generationMode == 'llm'
+                        ? Icons.auto_awesome
+                        : Icons.rule_outlined,
+                  ),
+                  title: Text(
+                    _advice!.generationMode == 'llm'
+                        ? 'AI 增强建议'
+                        : _advice!.generationMode == 'fallback'
+                            ? 'AI 暂不可用 · 已使用基础建议'
+                            : _advice!.generationMode == 'safety_fallback'
+                                ? 'AI 内容未通过安全检查 · 已使用基础建议'
+                                : '基础节律建议',
+                  ),
+                  subtitle: _advice!.model == null
+                      ? Text(_advice!.cached ? '已使用今日缓存' : '今日首次生成')
+                      : Text(
+                          '模型：${_advice!.model}${_advice!.cached ? ' · 已缓存' : ''}',
+                        ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (_advice!.id != null) ...<Widget>[
+                Text('这份建议对你有帮助吗？'),
+                Row(
+                  children: <Widget>[
+                    ChoiceChip(
+                      label: const Text('有帮助'),
+                      selected: _advice!.helpful == true,
+                      onSelected: (_) => _sendFeedback(true),
+                    ),
+                    const SizedBox(width: 12),
+                    ChoiceChip(
+                      label: const Text('没帮助'),
+                      selected: _advice!.helpful == false,
+                      onSelected: (_) => _sendFeedback(false),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
               for (int index = 0; index < _advice!.items.length; index++)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -103,6 +150,13 @@ class _DailyAdvicePageState extends State<DailyAdvicePage> {
                   ),
                 ),
               const SizedBox(height: 12),
+              if (_advice!.knowledgeSources.isNotEmpty) ...<Widget>[
+                Text(
+                  '参考知识：${_advice!.knowledgeSources.join('、')}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+              ],
               Text(
                 _advice!.disclaimer,
                 style: Theme.of(context).textTheme.bodySmall,
@@ -112,6 +166,24 @@ class _DailyAdvicePageState extends State<DailyAdvicePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _sendFeedback(bool helpful) async {
+    final String? adviceId = _advice?.id;
+    if (adviceId == null) return;
+    try {
+      final DailyAdvice updated = await widget.apiClient.submitAdviceFeedback(
+        adviceId,
+        helpful: helpful,
+      );
+      if (mounted) setState(() => _advice = updated);
+    } on ProfileApiException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
+    }
   }
 }
 
