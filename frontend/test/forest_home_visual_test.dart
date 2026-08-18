@@ -74,9 +74,26 @@ void main() {
           .load();
     }
 
-    await loadFont('ReviewChinese', r'C:\Windows\Fonts\simhei.ttf');
-    final String flutterRoot =
-        Platform.environment['FLUTTER_ROOT'] ?? r'D:\flutter';
+    final String? configuredFont =
+        Platform.environment['TIANRENLV_REVIEW_FONT'];
+    final List<String> reviewFontCandidates = <String>[
+      if (configuredFont != null) configuredFont,
+      if (Platform.isWindows) r'C:\Windows\Fonts\simhei.ttf',
+      '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+      '/System/Library/Fonts/PingFang.ttc',
+    ];
+    final String reviewFontPath = reviewFontCandidates.firstWhere(
+      (String path) => File(path).existsSync(),
+      orElse: () => throw StateError(
+        'No review CJK font found. Set TIANRENLV_REVIEW_FONT.',
+      ),
+    );
+    await loadFont('ReviewChinese', reviewFontPath);
+
+    final String? flutterRoot = Platform.environment['FLUTTER_ROOT'];
+    if (flutterRoot == null) {
+      throw StateError('FLUTTER_ROOT is required for visual tests.');
+    }
     await loadFont(
       'MaterialIcons',
       '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
