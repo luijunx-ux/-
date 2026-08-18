@@ -46,19 +46,54 @@ class _ReviewProfileApiClient extends ProfileApiClient {
   Future<int> getViewingStreak(DateTime throughDate) async => 6;
 }
 
+class _EmptyProfileApiClient extends ProfileApiClient {
+  _EmptyProfileApiClient() : super(baseUrl: 'http://visual-review.invalid');
+
+  @override
+  Future<List<LifeProfile>> listProfiles() async => <LifeProfile>[];
+
+  @override
+  Future<int> getViewingStreak(DateTime throughDate) async => 0;
+}
+
+class _ErrorProfileApiClient extends ProfileApiClient {
+  _ErrorProfileApiClient() : super(baseUrl: 'http://visual-review.invalid');
+
+  @override
+  Future<List<LifeProfile>> listProfiles() async {
+    throw const ProfileApiException('网络暂不可用，已保留你的本地设置。');
+  }
+}
+
 void main() {
+  Future<void> loadReviewFonts() async {
+    Future<void> loadFont(String family, String path) async {
+      final Uint8List bytes = File(path).readAsBytesSync();
+      await (FontLoader(family)
+            ..addFont(Future<ByteData>.value(ByteData.sublistView(bytes))))
+          .load();
+    }
+
+    await loadFont('ReviewChinese', r'C:\Windows\Fonts\simhei.ttf');
+    final String flutterRoot =
+        Platform.environment['FLUTTER_ROOT'] ?? r'D:\flutter';
+    await loadFont(
+      'MaterialIcons',
+      '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+    );
+  }
+
   Future<void> renderHome(
     WidgetTester tester, {
     required LifeThemeMode mode,
-    required String goldenPath,
+    String? goldenPath,
+    Size size = const Size(390, 844),
+    double textScale = 1,
+    ProfileApiClient? apiClient,
   }) async {
-    final Uint8List fontBytes =
-        File(r'C:\Windows\Fonts\simhei.ttf').readAsBytesSync();
-    final FontLoader fontLoader = FontLoader('ReviewChinese')
-      ..addFont(Future<ByteData>.value(ByteData.sublistView(fontBytes)));
-    await fontLoader.load();
+    await loadReviewFonts();
 
-    tester.view.physicalSize = const Size(390, 844);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -71,24 +106,42 @@ void main() {
           textTheme: reviewTheme.textTheme.apply(fontFamily: 'ReviewChinese'),
           primaryTextTheme:
               reviewTheme.primaryTextTheme.apply(fontFamily: 'ReviewChinese'),
+          filledButtonTheme: FilledButtonThemeData(
+            style: reviewTheme.filledButtonTheme.style?.copyWith(
+              textStyle: WidgetStatePropertyAll<TextStyle?>(
+                reviewTheme.textTheme.labelLarge
+                    ?.copyWith(fontFamily: 'ReviewChinese'),
+              ),
+            ),
+          ),
         ),
+        builder: (BuildContext context, Widget? child) {
+          final MediaQueryData data = MediaQuery.of(context);
+          return MediaQuery(
+            data: data.copyWith(textScaler: TextScaler.linear(textScale)),
+            child: child!,
+          );
+        },
         home: RepaintBoundary(
           key: const Key('life-home-review'),
           child: TodayDashboardPage(
-            apiClient: _ReviewProfileApiClient(),
+            apiClient: apiClient ?? _ReviewProfileApiClient(),
             accountPageBuilder: () => const SizedBox.shrink(),
             themeMode: mode,
             onThemeChanged: (_) {},
+            now: DateTime(2026, 8, 17, 15),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    await expectLater(
-      find.byKey(const Key('life-home-review')),
-      matchesGoldenFile(goldenPath),
-    );
+    if (goldenPath != null) {
+      await expectLater(
+        find.byKey(const Key('life-home-review')),
+        matchesGoldenFile(goldenPath),
+      );
+    }
   }
 
   testWidgets('Forest mobile home visual review', (WidgetTester tester) async {
@@ -106,5 +159,55 @@ void main() {
       mode: LifeThemeMode.obsidian,
       goldenPath: '../../docs/ui/review/obsidian-home-mobile-v3.png',
     );
+  });
+
+  testWidgets('narrow Forest home remains usable with enlarged text',
+      (WidgetTester tester) async {
+    await renderHome(
+      tester,
+      mode: LifeThemeMode.forest,
+      size: const Size(320, 700),
+      textScale: 1.3,
+      goldenPath:
+          '../../docs/ui/review/forest-home-narrow-large-text-v3.png',
+    );
+
+    expect(find.text('五运六气'), findsOneWidget);
+    expect(find.text('星辰节律'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('今日温和建议'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('今日温和建议'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('empty profile state preserves Forest visual hierarchy',
+      (WidgetTester tester) async {
+    await renderHome(
+      tester,
+      mode: LifeThemeMode.forest,
+      apiClient: _EmptyProfileApiClient(),
+    );
+
+    expect(find.text('从一份生命档案开始'), findsOneWidget);
+    expect(find.text('建立生命档案'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('offline state is explicit and recoverable in Obsidian',
+      (WidgetTester tester) async {
+    await renderHome(
+      tester,
+      mode: LifeThemeMode.obsidian,
+      apiClient: _ErrorProfileApiClient(),
+      goldenPath: '../../docs/ui/review/obsidian-home-offline-v3.png',
+    );
+
+    expect(find.text('暂时未能连接今日节律'), findsOneWidget);
+    expect(find.text('网络暂不可用，已保留你的本地设置。'), findsOneWidget);
+    expect(find.text('重新加载'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

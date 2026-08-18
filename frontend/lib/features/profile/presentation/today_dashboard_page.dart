@@ -16,6 +16,7 @@ class TodayDashboardPage extends StatefulWidget {
     required this.accountPageBuilder,
     required this.themeMode,
     required this.onThemeChanged,
+    this.now,
     super.key,
   });
 
@@ -23,6 +24,7 @@ class TodayDashboardPage extends StatefulWidget {
   final Widget Function() accountPageBuilder;
   final LifeThemeMode themeMode;
   final ValueChanged<LifeThemeMode> onThemeChanged;
+  final DateTime? now;
 
   @override
   State<TodayDashboardPage> createState() => _TodayDashboardPageState();
@@ -32,6 +34,8 @@ class _TodayDashboardPageState extends State<TodayDashboardPage> {
   List<LifeProfile>? _profiles;
   String? _error;
   int _viewingStreak = 0;
+
+  DateTime get _now => widget.now ?? DateTime.now();
 
   LifeProfile? get _defaultProfile {
     final profiles = _profiles;
@@ -50,7 +54,7 @@ class _TodayDashboardPageState extends State<TodayDashboardPage> {
     setState(() => _error = null);
     try {
       final profiles = await widget.apiClient.listProfiles();
-      final streak = await widget.apiClient.getViewingStreak(DateTime.now());
+      final streak = await widget.apiClient.getViewingStreak(_now);
       if (mounted) {
         setState(() {
           _profiles = profiles;
@@ -243,14 +247,14 @@ class _TodayDashboardPageState extends State<TodayDashboardPage> {
   }
 
   String _greeting() {
-    final hour = DateTime.now().hour;
+    final hour = _now.hour;
     if (hour < 11) return '早上好';
     if (hour < 18) return '下午好';
     return '晚上好';
   }
 
   String _today() {
-    final now = DateTime.now();
+    final now = _now;
     return '${now.year}年${now.month}月${now.day}日';
   }
 }
