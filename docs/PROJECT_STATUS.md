@@ -4,7 +4,7 @@
 当前版本：`0.1.0`
 当前分支：`main`
 远程仓库：`git@github.com:luijunx-ux/-.git`
-远程同步提交：`c8fe930`
+远程同步提交：`f81e2f3`
 
 ## 一、项目目标
 
@@ -38,6 +38,8 @@
 - Flutter 启动恢复会话，运行期间请求遇到 401 自动续期并重试一次。
 - 并发 401 合并为一次刷新，避免 Refresh Token 被重复消费。
 - 退出登录撤销当前 Refresh Token。
+- Access Token 使用 `sid` 绑定当前 Refresh Token 会话。
+- 账户页展示有效登录会话，并支持一键退出其他设备。
 - 永久注销账户并级联删除生命档案、建议历史和会话。
 - 注册、登录及账户邮件请求采用 Redis 原子滑动窗口分布式限流，Redis 键仅包含邮箱 SHA-256 哈希。
 - 开发环境允许在 Redis 不可用时降级到内存限流；非开发环境必须配置 Redis，服务不可用时认证请求返回 503。
@@ -93,7 +95,8 @@
 - 内存 Demo 预设账号：用户名 `admin`；密码只用于本地演示，详见 Demo 运行说明。
 - 内存 Demo 关闭后清空用户、档案和建议数据。
 - Demo 说明位于 `docs/DEMO.md`。
-- 本机未安装 Android SDK，因此尚未生成 APK。
+- Android SDK 36、NDK、CMake 与 Gradle 工具链已安装，Debug Demo APK 已成功生成并通过签名及清单校验。
+- 当前 Debug APK 使用包名 `com.tianrenlu.tianrenlu`，最低 Android 7.0（API 24），目标 API 36。
 
 ## 四、主要 API
 
@@ -103,6 +106,8 @@
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/sessions`
+- `DELETE /api/v1/auth/sessions/others`
 - `POST /api/v1/auth/email-verification/request`
 - `POST /api/v1/auth/email-verification/confirm`
 - `POST /api/v1/auth/password-reset/request`
@@ -203,10 +208,10 @@ python -m http.server 8080 --bind 127.0.0.1
 
 ## 八、最近验证结果
 
-- 后端 pytest：32 项通过。
+- 后端 pytest：38 项通过。
 - Ruff：通过。
 - mypy strict：通过。
-- Flutter Test：13 项通过。
+- Flutter Test：15 项通过。
 - Flutter Web release：构建成功。
 - Alembic 六段迁移链：通过。
 - Web Demo 和内存 Demo API：本地 HTTP 200。
@@ -221,7 +226,7 @@ Flutter `analyze` 在包含中文字符的 Windows 工作区路径中会触发 A
 - Git 提交者：`liujun <luijunx@gmail.com>`。
 - 当前远程：`git@github.com:luijunx-ux/-.git`。
 - 当前分支：`main`。
-- 最近已推送提交：`c64e678 feat: harden session renewal and account recovery`。
+- 最近已推送提交：`f81e2f3 feat: add distributed authentication rate limiting`。
 - 当前项目专用 SSH 私钥只保存在用户 `.ssh` 目录，未进入仓库。
 - 本地 Demo 压缩包和构建目录已被 `.gitignore` 排除。
 
@@ -231,8 +236,8 @@ Flutter `analyze` 在包含中文字符的 Windows 工作区路径中会触发 A
 2. 配置正式 Web 域名、HTTPS 和 `APP_PUBLIC_URL`。
 3. 为 Android/iOS 配置 Universal Link、App Link 和密码重置原生页面唤起。
 4. 为 Redis 配置生产级认证、TLS、监控告警与容量基线。
-5. 增加 Refresh Token 会话设备列表和“退出其他设备”。
-6. 安装 Android SDK，生成并签名 Android 测试 APK。
+5. 为会话列表增加设备名称、系统版本、最近活动时间和异常登录提醒。
+6. 配置正式应用图标、名称、Release Keystore，并生成可发布的签名 APK/AAB。
 7. 补充 UI 自动化、真实 PostgreSQL 集成测试和并发缓存测试。
 8. 自托管地理编码服务或采购具备 SLA 的服务。
 9. 配置正式 OpenAI API Key，执行安全评测集和成本/延迟基准。

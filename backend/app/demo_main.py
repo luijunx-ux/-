@@ -1,7 +1,8 @@
 """Disposable in-memory API used only for local product demonstrations."""
 
 from dataclasses import asdict
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
+from os import getenv
 from typing import Annotated, Any
 from uuid import uuid4
 
@@ -42,10 +43,13 @@ class DemoLoginRequest(BaseModel):
     password: str = Field(min_length=12, max_length=128)
 
 
-users["admin"] = {
-    "id": str(uuid4()),
-    "password_hash": passwords.hash("123456qwerty"),
-}
+_demo_email = getenv("TIANRENLV_DEMO_EMAIL")
+_demo_password = getenv("TIANRENLV_DEMO_PASSWORD")
+if _demo_email and _demo_password and len(_demo_password) >= 12:
+    users[_demo_email.lower()] = {
+        "id": str(uuid4()),
+        "password_hash": passwords.hash(_demo_password),
+    }
 
 
 def _birth(payload: ProfileCreateRequest | ProfileUpdateRequest) -> BirthData:
@@ -126,6 +130,24 @@ def refresh(payload: RefreshTokenRequest) -> dict[str, Any]:
 @app.post("/api/v1/auth/logout", status_code=204)
 def logout(payload: RefreshTokenRequest) -> Response:
     refresh_tokens.pop(payload.refresh_token, None)
+    return Response(status_code=204)
+
+
+@app.get("/api/v1/auth/sessions")
+def sessions(email: CurrentEmail) -> list[dict[str, Any]]:
+    now = datetime.now(UTC)
+    return [
+        {
+            "id": users[email]["id"],
+            "is_current": True,
+            "created_at": now.isoformat(),
+            "expires_at": (now + timedelta(days=30)).isoformat(),
+        }
+    ]
+
+
+@app.delete("/api/v1/auth/sessions/others", status_code=204)
+def revoke_other_demo_sessions(email: CurrentEmail) -> Response:
     return Response(status_code=204)
 
 

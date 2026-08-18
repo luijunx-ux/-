@@ -32,10 +32,12 @@ tests/          跨模块集成与端到端测试
 
 ## 开始开发前
 
-1. 复制根目录 `.env.example` 为 `.env`，按本地环境填写配置；不要提交 `.env`。
-2. 阅读 `docs/development-standards.md`。
-3. 进入 `backend/` 安装开发依赖：`python -m pip install -e ".[dev]"`。
-4. 所有密钥通过环境变量或密钥管理服务提供，不写入源码。
+1. 依次阅读 `AGENTS.md`、`PROJECT_CONTEXT.md`、`REQUIREMENTS_BASELINE.md` 和 `CURRENT_SPRINT.md`。
+2. UI 工作同时阅读 `docs/ui/`；未通过视觉审核不得暂存、提交或推送。
+3. 复制根目录 `.env.example` 为 `.env`，按本地环境填写配置；不要提交 `.env`。
+4. 阅读 `docs/development-standards.md`。
+5. 进入 `backend/` 安装开发依赖：`python -m pip install -e ".[dev]"`。
+6. 所有密钥通过环境变量或密钥管理服务提供，不写入源码。
 
 ## 当前状态
 
@@ -44,3 +46,7 @@ Web Demo 与六段数据库迁移均已建立。当前完成情况、运行方�
 
 - [项目状态总览](docs/PROJECT_STATUS.md)
 - [Web Demo 试用说明](docs/DEMO.md)
+- [冻结需求基线](REQUIREMENTS_BASELINE.md)
+- [当前 Sprint](CURRENT_SPRINT.md)
+- [UI 设计系统 V3.0](docs/ui/UI_DESIGN_SYSTEM_V3.md)
+- [UI 视觉审核标准](docs/ui/UI_ACCEPTANCE_CRITERIA.md)

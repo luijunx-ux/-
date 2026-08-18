@@ -92,6 +92,46 @@ void main() {
     );
   });
 
+  test('lists account sessions with bearer authorization', () async {
+    final AuthApiClient client = AuthApiClient(
+      client: MockClient((http.Request request) async {
+        expect(request.url.path, '/api/v1/auth/sessions');
+        expect(request.headers['authorization'], 'Bearer secret-token');
+        return http.Response(
+          jsonEncode(<Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': '7a208677-9e36-47ef-aa8d-da000600e62e',
+              'is_current': true,
+              'created_at': '2026-08-10T08:00:00Z',
+              'expires_at': '2026-09-09T08:00:00Z',
+            },
+          ]),
+          200,
+        );
+      }),
+      baseUrl: 'https://example.test',
+    );
+
+    final sessions = await client.sessions('secret-token');
+
+    expect(sessions, hasLength(1));
+    expect(sessions.single.isCurrent, isTrue);
+  });
+
+  test('revokes other sessions with delete request', () async {
+    final AuthApiClient client = AuthApiClient(
+      client: MockClient((http.Request request) async {
+        expect(request.method, 'DELETE');
+        expect(request.url.path, '/api/v1/auth/sessions/others');
+        expect(request.headers['authorization'], 'Bearer secret-token');
+        return http.Response('', 204);
+      }),
+      baseUrl: 'https://example.test',
+    );
+
+    await client.revokeOtherSessions('secret-token');
+  });
+
   test('refreshes once after 401 and retries with the rotated token', () async {
     int calls = 0;
     int refreshes = 0;

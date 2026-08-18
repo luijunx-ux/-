@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -39,3 +41,10 @@ class PasswordResetRequest(ActionTokenRequest):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class SessionResponse(BaseModel):
+    id: str
+    is_current: bool
+    created_at: datetime
+    expires_at: datetime

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:tianrenlu/core/life_theme.dart';
 import 'package:tianrenlu/features/auth/application/auth_controller.dart';
 import 'package:tianrenlu/features/auth/data/auth_api_client.dart';
 import 'package:tianrenlu/features/auth/data/authenticated_http_client.dart';
@@ -25,6 +26,10 @@ class _TianrenluAppState extends State<TianrenluApp> {
   late final AuthController _authController;
   late final Future<void> _restoreFuture;
   bool _accountActionHandled = false;
+  LifeThemeMode _themeMode =
+      const String.fromEnvironment('LIFE_THEME') == 'obsidian'
+          ? LifeThemeMode.obsidian
+          : LifeThemeMode.forest;
 
   @override
   void initState() {
@@ -49,14 +54,7 @@ class _TianrenluAppState extends State<TianrenluApp> {
     return MaterialApp(
       title: '天人律',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF315C4C),
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF7F4EC),
-        useMaterial3: true,
-      ),
+      theme: buildLifeTheme(_themeMode),
       home: !_accountActionHandled && purpose != null && actionToken != null
           ? AccountActionPage(
               purpose: purpose,
@@ -78,6 +76,10 @@ class _TianrenluAppState extends State<TianrenluApp> {
                       return AuthPage(controller: _authController);
                     }
                     return TodayDashboardPage(
+                      themeMode: _themeMode,
+                      onThemeChanged: (LifeThemeMode mode) {
+                        setState(() => _themeMode = mode);
+                      },
                       apiClient: ProfileApiClient(
                         client: AuthenticatedHttpClient(
                           inner: http.Client(),

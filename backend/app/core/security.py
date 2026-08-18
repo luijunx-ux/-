@@ -33,25 +33,48 @@ class TokenService:
         self._audience = audience
         self._access_token_minutes = access_token_minutes
 
-    def create_access_token(self, user_id: UUID) -> tuple[str, int]:
+    def create_access_token(self, user_id: UUID, session_id: UUID | None = None) -> tuple[str, int]:
         now = datetime.now(UTC)
         expires = now + timedelta(minutes=self._access_token_minutes)
+        payload = {
+            "sub": str(user_id),
+            "iss": self._issuer,
+            "aud": self._audience,
+            "iat": now,
+            "nbf": now,
+            "exp": expires,
+            "jti": str(uuid4()),
+        }
+        if session_id is not None:
+            payload["sid"] = str(session_id)
         token = jwt.encode(
-            {
-                "sub": str(user_id),
-                "iss": self._issuer,
-                "aud": self._audience,
-                "iat": now,
-                "nbf": now,
-                "exp": expires,
-                "jti": str(uuid4()),
-            },
+            payload,
             self._secret_key,
             algorithm="HS256",
         )
         return token, self._access_token_minutes * 60
 
     def decode_user_id(self, token: str) -> UUID | None:
+        payload = self._decode(token)
+        if payload is None:
+            return None
+        try:
+            subject = payload["sub"]
+            return UUID(subject) if isinstance(subject, str) else None
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    def decode_session_id(self, token: str) -> UUID | None:
+        payload = self._decode(token)
+        if payload is None:
+            return None
+        try:
+            session_id = payload["sid"]
+            return UUID(session_id) if isinstance(session_id, str) else None
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    def _decode(self, token: str) -> dict[str, object] | None:
         try:
             payload = jwt.decode(
                 token,
@@ -61,8 +84,8 @@ class TokenService:
                 audience=self._audience,
                 options={"require": ["sub", "iss", "aud", "exp", "nbf", "jti"]},
             )
-            return UUID(payload["sub"])
-        except (InvalidTokenError, KeyError, TypeError, ValueError):
+            return payload
+        except InvalidTokenError:
             return None
 
     def create_refresh_token(self) -> tuple[str, str]:

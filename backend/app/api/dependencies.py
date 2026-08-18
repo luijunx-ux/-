@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -126,6 +127,31 @@ async def get_current_user(
 
 
 CurrentUserDependency = Annotated[User, Depends(get_current_user)]
+
+
+def get_current_session_id(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+) -> UUID:
+    unauthorized = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="当前访问令牌不包含有效会话",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if credentials is None:
+        raise unauthorized
+    settings = get_settings()
+    session_id = TokenService(
+        secret_key=settings.jwt_secret_key.get_secret_value(),
+        issuer=settings.jwt_issuer,
+        audience=settings.jwt_audience,
+        access_token_minutes=settings.jwt_access_token_minutes,
+    ).decode_session_id(credentials.credentials)
+    if session_id is None:
+        raise unauthorized
+    return session_id
+
+
+CurrentSessionIdDependency = Annotated[UUID, Depends(get_current_session_id)]
 
 
 async def get_optional_current_user(

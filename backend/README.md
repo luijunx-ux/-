@@ -7,6 +7,7 @@ Python FastAPI 服务工程边界。
 - 密码使用 Argon2id 哈希，JWT 访问令牌默认有效期为 30 分钟。
 - Refresh Token 默认有效期 30 天，仅以 SHA-256 哈希入库；每次刷新都会轮换并使旧令牌失效。
 - `POST /api/v1/auth/logout` 会撤销当前 Refresh Token，账户删除会级联撤销全部会话。
+- `GET /api/v1/auth/sessions` 可查看有效登录会话，`DELETE /api/v1/auth/sessions/others` 可撤销当前设备以外的全部 Refresh Token。
 - 登录、注册及邮件请求采用 Redis 分布式滑动窗口限流；限流键仅保存邮箱哈希。开发环境在 Redis 不可用时降级为内存限流，非开发环境则拒绝放行请求。
 - 邮箱验证与密码重置使用有时限、单次消费的一次性令牌，数据库仅保存令牌哈希。
 - 开发环境通过专用日志邮件适配器输出令牌；生产部署必须接入真实邮件供应商。

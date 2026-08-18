@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.api.dependencies import (
     AuthServiceDependency,
+    CurrentSessionIdDependency,
     CurrentUserDependency,
     UserRepositoryDependency,
 )
@@ -21,6 +22,7 @@ from app.schemas.auth import (
     MessageResponse,
     PasswordResetRequest,
     RefreshTokenRequest,
+    SessionResponse,
     UserResponse,
 )
 
@@ -104,6 +106,38 @@ async def logout_session(
     service: AuthServiceDependency,
 ) -> Response:
     await service.revoke(payload.refresh_token)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/auth/sessions", response_model=list[SessionResponse])
+async def list_sessions(
+    user: CurrentUserDependency,
+    current_session_id: CurrentSessionIdDependency,
+    repository: UserRepositoryDependency,
+) -> list[SessionResponse]:
+    sessions = await repository.list_active_sessions(user.id)
+    if not any(session.id == current_session_id for session in sessions):
+        raise HTTPException(status_code=401, detail="当前会话已失效，请重新登录")
+    return [
+        SessionResponse(
+            id=str(session.id),
+            is_current=session.id == current_session_id,
+            created_at=session.created_at,
+            expires_at=session.expires_at,
+        )
+        for session in sessions
+    ]
+
+
+@router.delete("/auth/sessions/others", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_other_sessions(
+    user: CurrentUserDependency,
+    current_session_id: CurrentSessionIdDependency,
+    repository: UserRepositoryDependency,
+) -> Response:
+    if not await repository.is_session_active(user.id, current_session_id):
+        raise HTTPException(status_code=401, detail="当前会话已失效，请重新登录")
+    await repository.revoke_other_sessions(user.id, current_session_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

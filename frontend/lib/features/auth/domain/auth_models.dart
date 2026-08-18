@@ -33,3 +33,24 @@ class AuthSession {
   final String refreshToken;
   final AuthUser user;
 }
+
+class AccountSession {
+  const AccountSession({
+    required this.id,
+    required this.isCurrent,
+    required this.createdAt,
+    required this.expiresAt,
+  });
+
+  factory AccountSession.fromJson(Map<String, dynamic> json) => AccountSession(
+        id: json['id'] as String,
+        isCurrent: json['is_current'] as bool,
+        createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+        expiresAt: DateTime.parse(json['expires_at'] as String).toLocal(),
+      );
+
+  final String id;
+  final bool isCurrent;
+  final DateTime createdAt;
+  final DateTime expiresAt;
+}

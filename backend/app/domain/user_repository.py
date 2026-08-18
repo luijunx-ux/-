@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from app.domain.auth_session import AuthSession
 from app.domain.user import User
 
 
@@ -16,11 +17,17 @@ class UserRepository(Protocol):
 
     async def create_refresh_token(
         self, user_id: UUID, token_hash: str, expires_at: "datetime"
-    ) -> None: ...
+    ) -> UUID: ...
 
     async def consume_refresh_token(self, token_hash: str) -> User | None: ...
 
     async def revoke_refresh_token(self, token_hash: str) -> bool: ...
+
+    async def list_active_sessions(self, user_id: UUID) -> list[AuthSession]: ...
+
+    async def is_session_active(self, user_id: UUID, session_id: UUID) -> bool: ...
+
+    async def revoke_other_sessions(self, user_id: UUID, current_session_id: UUID) -> int: ...
 
     async def set_email_verified(self, user_id: UUID) -> User | None: ...
 

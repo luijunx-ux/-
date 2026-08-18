@@ -76,14 +76,14 @@ class AuthService:
         await self._repository.revoke_refresh_token(self._tokens.hash_opaque_token(refresh_token))
 
     async def _result(self, user: User) -> AuthenticationResult:
-        token, expires_in = self._tokens.create_access_token(user.id)
         refresh_token, token_hash = self._tokens.create_refresh_token()
         refresh_seconds = self._refresh_token_days * 24 * 60 * 60
-        await self._repository.create_refresh_token(
+        session_id = await self._repository.create_refresh_token(
             user.id,
             token_hash,
             datetime.now(UTC) + timedelta(seconds=refresh_seconds),
         )
+        token, expires_in = self._tokens.create_access_token(user.id, session_id)
         return AuthenticationResult(user, token, expires_in, refresh_token, refresh_seconds)
 
     async def request_email_verification(self, email: str) -> None:

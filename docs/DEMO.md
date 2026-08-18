@@ -27,7 +27,16 @@ python -m http.server 8080 --bind 127.0.0.1
 
 浏览器访问 `http://127.0.0.1:8080`。
 
-首次试用请注册一个测试邮箱和不少于 12 个字符的密码。开发环境的邮箱验证及密码重置
+如需预置本地审核账号，请在启动后端前设置 `TIANRENLV_DEMO_EMAIL` 和
+`TIANRENLV_DEMO_PASSWORD`（密码不少于 12 个字符）；也可以直接注册一个测试邮箱。
+开发环境的邮箱验证及密码重置
 令牌只输出到后端日志，不会发送真实邮件。AI 未配置 API Key 时自动使用安全的基础节律建议。
 
-Web Demo 仅用于本地评审。正式移动端安装包仍需安装 Android SDK 后构建。
+Web Demo 仅用于本地评审。
+
+## Android Debug Demo
+
+已生成本地调试包：`frontend/artifacts/tianrenlu-demo-debug.apk`。该包使用 Android Debug
+证书签名，仅用于试跑，不得发布到应用商店。构建时 API 地址为电脑 WLAN 地址
+`http://10.0.0.16:8000`；手机与电脑必须位于同一局域网，并先以 `0.0.0.0:8000`
+启动内存 Demo API。电脑局域网地址变化后需要重新构建 APK。

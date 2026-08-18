@@ -1,9 +1,12 @@
 from datetime import UTC, datetime
+from typing import Any, cast
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.auth_session import AuthSession
 from app.domain.user import User
 from app.infrastructure.orm import (
     AccountActionTokenRecord,
@@ -43,11 +46,13 @@ class SqlAlchemyUserRepository:
 
     async def create_refresh_token(
         self, user_id: UUID, token_hash: str, expires_at: datetime
-    ) -> None:
-        self._session.add(
-            RefreshTokenRecord(user_id=user_id, token_hash=token_hash, expires_at=expires_at)
+    ) -> UUID:
+        record = RefreshTokenRecord(
+            user_id=user_id, token_hash=token_hash, expires_at=expires_at
         )
+        self._session.add(record)
         await self._session.commit()
+        return record.id
 
     async def consume_refresh_token(self, token_hash: str) -> User | None:
         record = await self._session.scalar(
@@ -75,6 +80,57 @@ class SqlAlchemyUserRepository:
         record.revoked_at = datetime.now(UTC)
         await self._session.commit()
         return True
+
+    async def list_active_sessions(self, user_id: UUID) -> list[AuthSession]:
+        now = datetime.now(UTC)
+        records = (
+            await self._session.scalars(
+                select(RefreshTokenRecord)
+                .where(
+                    RefreshTokenRecord.user_id == user_id,
+                    RefreshTokenRecord.consumed_at.is_(None),
+                    RefreshTokenRecord.revoked_at.is_(None),
+                    RefreshTokenRecord.expires_at > now,
+                )
+                .order_by(RefreshTokenRecord.created_at.desc())
+            )
+        ).all()
+        return [
+            AuthSession(id=record.id, created_at=record.created_at, expires_at=record.expires_at)
+            for record in records
+        ]
+
+    async def is_session_active(self, user_id: UUID, session_id: UUID) -> bool:
+        now = datetime.now(UTC)
+        record_id = await self._session.scalar(
+            select(RefreshTokenRecord.id).where(
+                RefreshTokenRecord.id == session_id,
+                RefreshTokenRecord.user_id == user_id,
+                RefreshTokenRecord.consumed_at.is_(None),
+                RefreshTokenRecord.revoked_at.is_(None),
+                RefreshTokenRecord.expires_at > now,
+            )
+        )
+        return record_id is not None
+
+    async def revoke_other_sessions(self, user_id: UUID, current_session_id: UUID) -> int:
+        now = datetime.now(UTC)
+        result = cast(
+            CursorResult[Any],
+            await self._session.execute(
+                update(RefreshTokenRecord)
+                .where(
+                    RefreshTokenRecord.user_id == user_id,
+                    RefreshTokenRecord.id != current_session_id,
+                    RefreshTokenRecord.consumed_at.is_(None),
+                    RefreshTokenRecord.revoked_at.is_(None),
+                    RefreshTokenRecord.expires_at > now,
+                )
+                .values(revoked_at=now)
+            ),
+        )
+        await self._session.commit()
+        return int(result.rowcount or 0)
 
     async def set_email_verified(self, user_id: UUID) -> User | None:
         record = await self._session.get(UserRecord, user_id)

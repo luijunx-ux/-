@@ -102,6 +102,17 @@ class AuthController extends ChangeNotifier {
     await logout();
   }
 
+  Future<List<AccountSession>> sessions() async {
+    final String? currentToken = _token;
+    if (currentToken == null) return const <AccountSession>[];
+    return _api.sessions(currentToken);
+  }
+
+  Future<void> revokeOtherSessions() async {
+    final String? currentToken = _token;
+    if (currentToken != null) await _api.revokeOtherSessions(currentToken);
+  }
+
   Future<void> _accept(AuthSession session) async {
     await _store.saveTokens(session.accessToken, session.refreshToken);
     _token = session.accessToken;

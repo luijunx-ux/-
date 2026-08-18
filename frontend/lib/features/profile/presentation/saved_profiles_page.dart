@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tianrenlu/core/life_surface.dart';
+import 'package:tianrenlu/core/life_theme.dart';
 import 'package:tianrenlu/features/profile/data/profile_api_client.dart';
 import 'package:tianrenlu/features/profile/domain/profile_models.dart';
 import 'package:tianrenlu/features/profile/presentation/profile_result_page.dart';
@@ -68,10 +70,12 @@ class _SavedProfilesPageState extends State<SavedProfilesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(title: const Text('我的生命档案')),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: _body(),
+      body: LifeBackground(
+        child: SafeArea(
+          child: RefreshIndicator(onRefresh: _load, child: _body()),
+        ),
       ),
     );
   }
@@ -80,10 +84,14 @@ class _SavedProfilesPageState extends State<SavedProfilesPage> {
     if (_error != null) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         children: <Widget>[
-          Text(_error!, textAlign: TextAlign.center),
-          TextButton(onPressed: _load, child: const Text('重试')),
+          LifeEmptyState(
+              icon: Icons.cloud_off_outlined,
+              title: '暂时无法读取档案',
+              message: _error!,
+              action: FilledButton.tonal(
+                  onPressed: _load, child: const Text('重新加载'))),
         ],
       );
     }
@@ -93,67 +101,110 @@ class _SavedProfilesPageState extends State<SavedProfilesPage> {
     if (_profiles!.isEmpty) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(20),
         children: const <Widget>[
-          Icon(Icons.folder_open_outlined, size: 56),
-          SizedBox(height: 16),
-          Text('还没有保存的生命档案', textAlign: TextAlign.center),
+          LifeEmptyState(
+              icon: Icons.folder_open_outlined,
+              title: '还没有保存的生命档案',
+              message: '从首页新建一份档案后，可以在这里查看、编辑与管理。'),
         ],
       );
     }
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       itemCount: _profiles!.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (BuildContext context, int index) {
         final LifeProfile profile = _profiles![index];
         final BirthInput? birth = profile.birthInput;
-        return Card(
-          child: ListTile(
-            leading: const CircleAvatar(child: Icon(Icons.auto_awesome)),
-            title: Row(
-              children: <Widget>[
-                Expanded(child: Text(profile.name)),
-                if (profile.isDefault) const Chip(label: Text('默认')),
-              ],
-            ),
-            subtitle: Text(
-              '${_date(birth?.occurredAt)} · ${profile.zodiac.sign}',
-            ),
-            trailing: PopupMenuButton<String>(
-              onSelected: (String action) async {
-                if (action == 'edit') {
-                  await Navigator.of(context).push<void>(
+        final LifeThemeTokens t =
+            Theme.of(context).extension<LifeThemeTokens>()!;
+        return LifePanel(
+          onTap: birth == null
+              ? null
+              : () => Navigator.of(context).push<void>(
                     MaterialPageRoute<void>(
-                      builder: (_) => ProfileFormPage(
+                      builder: (_) => ProfileResultPage(
+                        profile: profile,
+                        birthInput: birth,
                         apiClient: widget.apiClient,
-                        initialProfile: profile,
                       ),
                     ),
-                  );
-                  await _load();
-                } else {
-                  await _delete(profile);
-                }
-              },
-              itemBuilder: (_) => const <PopupMenuEntry<String>>[
-                PopupMenuItem(value: 'edit', child: Text('编辑或设为默认')),
-                PopupMenuItem(value: 'delete', child: Text('删除')),
-              ],
-            ),
-            onTap: birth == null
-                ? null
-                : () => Navigator.of(context).push<void>(
-                      MaterialPageRoute<void>(
-                        builder: (_) => ProfileResultPage(
-                          profile: profile,
-                          birthInput: birth,
-                          apiClient: widget.apiClient,
+                  ),
+          child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: t.surfaceStrong,
+                        border: Border.all(color: t.outline)),
+                    child: Icon(Icons.spa_outlined, color: t.accent)),
+                const SizedBox(width: 14),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                              child: Text(profile.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w800))),
+                          if (profile.isDefault)
+                            Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                    color: t.accent.withValues(alpha: .12),
+                                    borderRadius: BorderRadius.circular(99)),
+                                child: Text('默认',
+                                    style: TextStyle(
+                                        color: t.accent,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700))),
+                        ],
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                          '${_date(birth?.occurredAt)} · ${profile.zodiac.sign}',
+                          style: TextStyle(color: t.textSecondary)),
+                      const SizedBox(height: 5),
+                      Text(birth?.placeName ?? '地点未记录',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              TextStyle(color: t.textSecondary, fontSize: 13)),
+                    ])),
+                PopupMenuButton<String>(
+                  onSelected: (String action) async {
+                    if (action == 'edit') {
+                      await Navigator.of(context).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => ProfileFormPage(
+                            apiClient: widget.apiClient,
+                            initialProfile: profile,
+                          ),
                         ),
-                      ),
-                    ),
-          ),
+                      );
+                      await _load();
+                    } else {
+                      await _delete(profile);
+                    }
+                  },
+                  itemBuilder: (_) => const <PopupMenuEntry<String>>[
+                    PopupMenuItem(value: 'edit', child: Text('编辑或设为默认')),
+                    PopupMenuItem(value: 'delete', child: Text('删除')),
+                  ],
+                )
+              ]),
         );
       },
     );

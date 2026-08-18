@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tianrenlu/core/life_theme.dart';
 import 'package:tianrenlu/features/profile/data/profile_api_client.dart';
 import 'package:tianrenlu/features/profile/domain/profile_models.dart';
 
@@ -76,93 +77,61 @@ class _DailyAdvicePageState extends State<DailyAdvicePage> {
 
   @override
   Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
     return Scaffold(
-      appBar: AppBar(title: const Text('每日生命建议')),
-      body: RefreshIndicator(
-        onRefresh: _loadAdvice,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(20),
-          children: <Widget>[
-            OutlinedButton.icon(
-              onPressed: _loading ? null : _chooseDate,
-              icon: const Icon(Icons.today_outlined),
-              label: Text(_dateLabel),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+          title: const Text('AI 生命建议'),
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: <Color>[t.backgroundTop, t.backgroundBottom])),
+        child: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _loadAdvice,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
+              children: <Widget>[
+                _AdviceHero(
+                    dateLabel: _dateLabel,
+                    loading: _loading,
+                    onChooseDate: _chooseDate),
+                const SizedBox(height: 20),
+                if (_loading)
+                  const _LoadingAdvice()
+                else if (_error != null)
+                  _ErrorCard(message: _error!, onRetry: _loadAdvice)
+                else if (_advice != null) ...<Widget>[
+                  _GenerationCard(advice: _advice!),
+                  const SizedBox(height: 18),
+                  Text('今天可以这样照顾自己',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 12),
+                  for (int index = 0; index < _advice!.items.length; index++)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _ActionCard(
+                          index: index, text: _advice!.items[index]),
+                    ),
+                  if (_advice!.id != null)
+                    _FeedbackCard(
+                        helpful: _advice!.helpful,
+                        onHelpful: () => _sendFeedback(true),
+                        onNotHelpful: () => _sendFeedback(false)),
+                  const SizedBox(height: 12),
+                  _SourceCard(advice: _advice!),
+                ],
+              ],
             ),
-            const SizedBox(height: 20),
-            if (_loading)
-              const Center(child: CircularProgressIndicator())
-            else if (_error != null)
-              _ErrorCard(message: _error!, onRetry: _loadAdvice)
-            else if (_advice != null) ...<Widget>[
-              Card(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                child: ListTile(
-                  leading: Icon(
-                    _advice!.generationMode == 'llm'
-                        ? Icons.auto_awesome
-                        : Icons.rule_outlined,
-                  ),
-                  title: Text(
-                    _advice!.generationMode == 'llm'
-                        ? 'AI 增强建议'
-                        : _advice!.generationMode == 'fallback'
-                            ? 'AI 暂不可用 · 已使用基础建议'
-                            : _advice!.generationMode == 'safety_fallback'
-                                ? 'AI 内容未通过安全检查 · 已使用基础建议'
-                                : '基础节律建议',
-                  ),
-                  subtitle: _advice!.model == null
-                      ? Text(_advice!.cached ? '已使用今日缓存' : '今日首次生成')
-                      : Text(
-                          '模型：${_advice!.model}${_advice!.cached ? ' · 已缓存' : ''}',
-                        ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (_advice!.id != null) ...<Widget>[
-                Text('这份建议对你有帮助吗？'),
-                Row(
-                  children: <Widget>[
-                    ChoiceChip(
-                      label: const Text('有帮助'),
-                      selected: _advice!.helpful == true,
-                      onSelected: (_) => _sendFeedback(true),
-                    ),
-                    const SizedBox(width: 12),
-                    ChoiceChip(
-                      label: const Text('没帮助'),
-                      selected: _advice!.helpful == false,
-                      onSelected: (_) => _sendFeedback(false),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
-              for (int index = 0; index < _advice!.items.length; index++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Card(
-                    child: ListTile(
-                      leading: CircleAvatar(child: Text('${index + 1}')),
-                      title: Text(_advice!.items[index]),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 12),
-              if (_advice!.knowledgeSources.isNotEmpty) ...<Widget>[
-                Text(
-                  '参考知识：${_advice!.knowledgeSources.join('、')}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-              ],
-              Text(
-                _advice!.disclaimer,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
@@ -187,6 +156,227 @@ class _DailyAdvicePageState extends State<DailyAdvicePage> {
   }
 }
 
+class _AdviceHero extends StatelessWidget {
+  const _AdviceHero(
+      {required this.dateLabel,
+      required this.loading,
+      required this.onChooseDate});
+
+  final String dateLabel;
+  final bool loading;
+  final VoidCallback onChooseDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
+    return _AdvicePanel(
+        radius: 32,
+        child: Column(children: <Widget>[
+          Container(
+              width: 116,
+              height: 116,
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: <Color>[
+                    t.glow.withValues(alpha: .9),
+                    t.accentSoft.withValues(alpha: .76),
+                    t.surfaceStrong
+                  ]),
+                  border: Border.all(color: t.outline, width: 2),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                        color: t.accent.withValues(alpha: .28), blurRadius: 32)
+                  ]),
+              child: Icon(Icons.water_drop_outlined,
+                  color: t.textPrimary, size: 46)),
+          const SizedBox(height: 14),
+          Text('你的今日生命陪伴',
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(height: 6),
+          Text('基于结构化节律结果，提供温和且可执行的生活参考。',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: t.textSecondary, height: 1.45)),
+          const SizedBox(height: 14),
+          OutlinedButton.icon(
+              onPressed: loading ? null : onChooseDate,
+              icon: const Icon(Icons.today_outlined),
+              label: Text(dateLabel)),
+        ]));
+  }
+}
+
+class _GenerationCard extends StatelessWidget {
+  const _GenerationCard({required this.advice});
+  final DailyAdvice advice;
+
+  @override
+  Widget build(BuildContext context) {
+    final String title = advice.generationMode == 'llm'
+        ? 'AI 增强建议'
+        : advice.generationMode == 'fallback'
+            ? 'AI 暂不可用 · 已使用基础建议'
+            : advice.generationMode == 'safety_fallback'
+                ? 'AI 内容未通过安全检查 · 已使用基础建议'
+                : '基础节律建议';
+    return _AdvicePanel(
+        padding: const EdgeInsets.all(15),
+        radius: 22,
+        child: Row(children: <Widget>[
+          Icon(advice.generationMode == 'llm'
+              ? Icons.auto_awesome
+              : Icons.rule_outlined),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                Text(title,
+                    style: const TextStyle(fontWeight: FontWeight.w800)),
+                const SizedBox(height: 4),
+                Text(
+                    advice.model == null
+                        ? (advice.cached ? '已使用今日缓存' : '今日首次生成')
+                        : '模型：${advice.model}${advice.cached ? ' · 已缓存' : ''}',
+                    style: Theme.of(context).textTheme.bodySmall),
+              ]))
+        ]));
+  }
+}
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({required this.index, required this.text});
+  final int index;
+  final String text;
+
+  static const List<IconData> icons = <IconData>[
+    Icons.restaurant_outlined,
+    Icons.bedtime_outlined,
+    Icons.directions_walk_outlined,
+    Icons.favorite_border_rounded,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
+    return _AdvicePanel(
+        padding: const EdgeInsets.all(15),
+        radius: 22,
+        child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: t.surfaceStrong,
+                      border: Border.all(color: t.outline)),
+                  child: Icon(icons[index % icons.length], color: t.accent)),
+              const SizedBox(width: 13),
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Text(text,
+                          style: const TextStyle(fontSize: 16, height: 1.45)))),
+            ]));
+  }
+}
+
+class _FeedbackCard extends StatelessWidget {
+  const _FeedbackCard(
+      {required this.helpful,
+      required this.onHelpful,
+      required this.onNotHelpful});
+  final bool? helpful;
+  final VoidCallback onHelpful;
+  final VoidCallback onNotHelpful;
+
+  @override
+  Widget build(BuildContext context) => _AdvicePanel(
+      padding: const EdgeInsets.all(15),
+      radius: 22,
+      child: Row(children: <Widget>[
+        const Expanded(
+            child: Text('这份建议对你有帮助吗？',
+                style: TextStyle(fontWeight: FontWeight.w700))),
+        IconButton.filledTonal(
+            tooltip: '有帮助',
+            onPressed: onHelpful,
+            icon: Icon(
+                helpful == true ? Icons.thumb_up : Icons.thumb_up_outlined)),
+        const SizedBox(width: 6),
+        IconButton.filledTonal(
+            tooltip: '没帮助',
+            onPressed: onNotHelpful,
+            icon: Icon(helpful == false
+                ? Icons.thumb_down
+                : Icons.thumb_down_outlined)),
+      ]));
+}
+
+class _SourceCard extends StatelessWidget {
+  const _SourceCard({required this.advice});
+  final DailyAdvice advice;
+
+  @override
+  Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
+    return _AdvicePanel(
+        padding: const EdgeInsets.all(15),
+        radius: 20,
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Row(children: <Widget>[
+                Icon(Icons.fact_check_outlined, size: 20),
+                SizedBox(width: 8),
+                Text('依据与边界', style: TextStyle(fontWeight: FontWeight.w800)),
+              ]),
+              if (advice.knowledgeSources.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 10),
+                Text('参考知识：${advice.knowledgeSources.join('、')}',
+                    style: TextStyle(color: t.textSecondary)),
+              ],
+              const SizedBox(height: 8),
+              Text(advice.disclaimer,
+                  style: TextStyle(color: t.textSecondary, height: 1.45)),
+            ]));
+  }
+}
+
+class _LoadingAdvice extends StatelessWidget {
+  const _LoadingAdvice();
+  @override
+  Widget build(BuildContext context) => const _AdvicePanel(
+      child: SizedBox(
+          height: 150, child: Center(child: CircularProgressIndicator())));
+}
+
+class _AdvicePanel extends StatelessWidget {
+  const _AdvicePanel(
+      {required this.child,
+      this.padding = const EdgeInsets.all(20),
+      this.radius = 26});
+  final Widget child;
+  final EdgeInsets padding;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
+    return Container(
+        padding: padding,
+        decoration: BoxDecoration(
+            color: t.surface,
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(color: t.outline)),
+        child: child);
+  }
+}
+
 class _ErrorCard extends StatelessWidget {
   const _ErrorCard({required this.message, required this.onRetry});
 
@@ -195,10 +385,9 @@ class _ErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Theme.of(context).colorScheme.errorContainer,
+    return _AdvicePanel(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         child: Column(
           children: <Widget>[
             Text(message),

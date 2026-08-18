@@ -13,13 +13,15 @@ from app.application.auth_service import (
 )
 from app.core.config import Settings
 from app.core.security import PasswordService, SafetyIdentifierService, TokenService
+from app.domain.auth_session import AuthSession
 from app.domain.user import User
 
 
 class InMemoryUserRepository:
     def __init__(self) -> None:
         self.users: dict[UUID, User] = {}
-        self.refresh_tokens: dict[str, UUID] = {}
+        self.refresh_tokens: dict[str, tuple[UUID, UUID]] = {}
+        self.sessions: dict[UUID, tuple[UUID, datetime]] = {}
         self.action_tokens: dict[tuple[str, str], UUID] = {}
 
     async def create(self, email: str, password_hash: str) -> User:
@@ -38,15 +40,47 @@ class InMemoryUserRepository:
 
     async def create_refresh_token(
         self, user_id: UUID, token_hash: str, expires_at: datetime
-    ) -> None:
-        self.refresh_tokens[token_hash] = user_id
+    ) -> UUID:
+        session_id = uuid4()
+        self.refresh_tokens[token_hash] = (user_id, session_id)
+        self.sessions[session_id] = (user_id, expires_at)
+        return session_id
 
     async def consume_refresh_token(self, token_hash: str) -> User | None:
-        user_id = self.refresh_tokens.pop(token_hash, None)
-        return None if user_id is None else self.users.get(user_id)
+        token = self.refresh_tokens.pop(token_hash, None)
+        if token is None:
+            return None
+        user_id, session_id = token
+        self.sessions.pop(session_id, None)
+        return self.users.get(user_id)
 
     async def revoke_refresh_token(self, token_hash: str) -> bool:
-        return self.refresh_tokens.pop(token_hash, None) is not None
+        token = self.refresh_tokens.pop(token_hash, None)
+        if token is None:
+            return False
+        self.sessions.pop(token[1], None)
+        return True
+
+    async def list_active_sessions(self, user_id: UUID) -> list[AuthSession]:
+        return [
+            AuthSession(id=session_id, created_at=expires_at, expires_at=expires_at)
+            for session_id, (owner_id, expires_at) in self.sessions.items()
+            if owner_id == user_id
+        ]
+
+    async def is_session_active(self, user_id: UUID, session_id: UUID) -> bool:
+        session = self.sessions.get(session_id)
+        return session is not None and session[0] == user_id
+
+    async def revoke_other_sessions(self, user_id: UUID, current_session_id: UUID) -> int:
+        session_ids = [
+            session_id
+            for session_id, (owner_id, _) in self.sessions.items()
+            if owner_id == user_id and session_id != current_session_id
+        ]
+        for session_id in session_ids:
+            self.sessions.pop(session_id)
+        return len(session_ids)
 
     async def set_email_verified(self, user_id: UUID) -> User | None:
         user = self.users.get(user_id)
@@ -110,6 +144,7 @@ class AuthenticationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.user.email, "user@example.com")
         self.assertNotEqual(result.user.password_hash, "long-password-123")
         self.assertEqual(token_service().decode_user_id(result.access_token), result.user.id)
+        self.assertIsNotNone(token_service().decode_session_id(result.access_token))
 
     async def test_duplicate_registration_is_rejected(self) -> None:
         await self.service.register("user@example.com", "long-password-123")

@@ -103,6 +103,32 @@ class AuthApiClient {
     _ensureSuccess(response, body);
   }
 
+  Future<List<AccountSession>> sessions(String token) async {
+    final http.Response response = await _send(
+      () => _client.get(
+        Uri.parse('$_baseUrl/api/v1/auth/sessions'),
+        headers: _authorizedHeaders(token),
+      ),
+    );
+    final Object? body = _decode(response);
+    _ensureSuccess(response, body);
+    return (body as List<dynamic>)
+        .map((dynamic item) =>
+            AccountSession.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<void> revokeOtherSessions(String token) async {
+    final http.Response response = await _send(
+      () => _client.delete(
+        Uri.parse('$_baseUrl/api/v1/auth/sessions/others'),
+        headers: _authorizedHeaders(token),
+      ),
+    );
+    final Object? body = _decode(response);
+    _ensureSuccess(response, body);
+  }
+
   Future<AuthSession> _authenticate(
     String path,
     String email,
