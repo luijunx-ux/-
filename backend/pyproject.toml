@@ -30,6 +30,9 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+  "asyncio: run an asynchronous test with pytest-asyncio",
+]
 
 [tool.ruff]
 line-length = 100

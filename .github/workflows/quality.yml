@@ -16,6 +16,33 @@ jobs:
   backend:
     name: Backend quality
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: tianrenlu_test
+          POSTGRES_USER: tianrenlu
+          POSTGRES_PASSWORD: test-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tianrenlu -d tianrenlu_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://tianrenlu:test-only-password@localhost:5432/tianrenlu_test
+      REDIS_URL: redis://localhost:6379/0
+      TIANRENLV_SERVICE_TESTS: '1'
     defaults:
       run:
         working-directory: backend
@@ -32,6 +59,8 @@ jobs:
         run: ruff check .
       - name: Type check
         run: mypy app
+      - name: Apply database migrations
+        run: alembic upgrade head
       - name: Test
         run: pytest
 

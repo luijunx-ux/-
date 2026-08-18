@@ -47,7 +47,7 @@
 - CI 故障只允许修复流水线，不允许通过删除安全检查或核心测试绕过。
 - 部署异常时回滚上一稳定镜像和数据库向后兼容版本；不可逆迁移必须先提供恢复方案。
 
-## 当前模块：CI 质量门禁
+## 模块 1：CI 质量门禁
 
 状态：实现完成，等待审核与首次 GitHub Actions 运行验证。
 
@@ -56,3 +56,13 @@
 - [x] 将视觉测试字体加载改为跨平台、环境可配置。
 - [x] 本地复现后端 lint、类型检查、测试及 Flutter analyze/test。
 - [ ] 提交后确认 GitHub Actions 在 Linux Runner 首次运行通过。
+
+## 当前模块：PostgreSQL / Redis 全链路集成测试
+
+状态：实现完成，等待审核与 GitHub Linux Runner 真实服务验证。
+
+- [x] CI 使用临时 PostgreSQL 17 与 Redis 7 服务，不访问生产数据。
+- [x] 在测试前执行 Alembic 全量迁移。
+- [x] 验证迁移版本、JSONB 持久化、仓储读写与用户删除级联。
+- [x] 验证 Redis 限流跨实例共享、达到上限拒绝和标识符哈希保护。
+- [ ] 在 GitHub Linux Runner 上完成首次真实服务验证。
