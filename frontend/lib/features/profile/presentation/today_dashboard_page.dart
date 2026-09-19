@@ -9,6 +9,7 @@ import 'package:tianrenlu/features/profile/domain/profile_models.dart';
 import 'package:tianrenlu/features/profile/presentation/profile_form_page.dart';
 import 'package:tianrenlu/features/profile/presentation/profile_result_page.dart';
 import 'package:tianrenlu/features/profile/presentation/saved_profiles_page.dart';
+import 'package:tianrenlu/features/profile/presentation/vitality_home_sections.dart';
 
 class TodayDashboardPage extends StatefulWidget {
   const TodayDashboardPage({
@@ -155,6 +156,27 @@ class _TodayDashboardPageState extends State<TodayDashboardPage> {
           apiClient: widget.apiClient,
           initialSection: section,
         ));
+    if (t.mode == LifeThemeMode.vitality) {
+      return <Widget>[
+        VitalityHomeSections(
+          profile: profile,
+          onOpenYunqi: canOpen
+              ? () => openProfile(ProfileRhythmSection.wuyunLiuqi)
+              : null,
+          onOpenStellar:
+              canOpen ? () => openProfile(ProfileRhythmSection.zodiac) : null,
+          onOpenAdvice: canOpen
+              ? () => _open(DailyAdvicePage(
+                  apiClient: widget.apiClient,
+                  birthInput: profile.birthInput!,
+                  profileId: profile.id))
+              : null,
+          onOpenHistory: () =>
+              _open(AdviceHistoryPage(apiClient: widget.apiClient)),
+          onOpenAccount: () => _open(widget.accountPageBuilder()),
+        ),
+      ];
+    }
     return <Widget>[
       _LifeHero(
           profile: profile,
@@ -298,10 +320,14 @@ class _Header extends StatelessWidget {
               value: LifeThemeMode.forest, child: Text('Forest Life 森林生命')),
           PopupMenuItem(
               value: LifeThemeMode.obsidian, child: Text('Obsidian Life 黑曜生命')),
+          PopupMenuItem(
+              value: LifeThemeMode.vitality, child: Text('Vitality Life 悦活生命')),
         ],
-        icon: Icon(themeMode == LifeThemeMode.forest
-            ? Icons.park_outlined
-            : Icons.auto_awesome_outlined),
+        icon: Icon(switch (themeMode) {
+          LifeThemeMode.forest => Icons.park_outlined,
+          LifeThemeMode.obsidian => Icons.auto_awesome_outlined,
+          LifeThemeMode.vitality => Icons.wb_sunny_outlined,
+        }),
       ),
       IconButton(
           tooltip: '账户与隐私',

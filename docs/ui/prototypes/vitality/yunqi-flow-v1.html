@@ -1,0 +1,179 @@
+<div id="trl-yunqi-flow-v1">
+  <style>
+    #trl-yunqi-flow-v1 { display:grid; justify-items:center; gap:12px; padding:20px 0; font-family:"Noto Sans SC","Microsoft YaHei",sans-serif; color:#17251f; }
+    #trl-yunqi-flow-v1 * { box-sizing:border-box; }
+    #trl-yunqi-flow-v1 .trl-switcher { display:flex; gap:5px; padding:4px; border:1px solid #d8e3dc; border-radius:14px; background:#eef4f0; }
+    #trl-yunqi-flow-v1 .trl-switcher button { min-height:38px; border:0; border-radius:10px; padding:0 15px; background:transparent; color:#5c7166; font:inherit; font-size:11px; cursor:pointer; }
+    #trl-yunqi-flow-v1 .trl-switcher button[aria-pressed="true"] { background:#fff; color:#1d634a; box-shadow:0 2px 8px rgba(37,80,60,.1); }
+    #trl-yunqi-flow-v1 .trl-phone { width:min(390px,100%); overflow:hidden; border:1px solid #d7e2da; border-radius:35px; background:#f3f7f4; box-shadow:0 26px 66px rgba(36,67,52,.18); }
+    #trl-yunqi-flow-v1 .trl-view { display:none; }
+    #trl-yunqi-flow-v1 .trl-view.is-active { display:block; }
+    #trl-yunqi-flow-v1 .trl-status { display:flex; justify-content:space-between; align-items:center; padding:17px 18px 0; color:#456156; font-size:10px; }
+    #trl-yunqi-flow-v1 .trl-system { display:flex; align-items:center; gap:5px; }
+    #trl-yunqi-flow-v1 .trl-system i { width:12px; height:12px; }
+    #trl-yunqi-flow-v1 .trl-home { padding:13px 15px 25px; }
+    #trl-yunqi-flow-v1 .trl-home-context { display:flex; justify-content:space-between; align-items:end; margin-bottom:10px; }
+    #trl-yunqi-flow-v1 .trl-home-context span:first-child { font-size:13px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-home-context span:last-child { color:#6d8076; font-size:10px; }
+    #trl-yunqi-flow-v1 .trl-yunqi-card { overflow:hidden; border:1px solid #dce6df; border-radius:23px; background:#fff; box-shadow:0 5px 18px rgba(39,74,57,.08); }
+    #trl-yunqi-flow-v1 .trl-visual { position:relative; height:128px; padding:17px; color:#fafffb; background:radial-gradient(circle at 78% 26%,rgba(243,181,91,.95) 0 7%,rgba(243,181,91,.27) 8% 23%,transparent 24%),linear-gradient(140deg,#285f4d 0%,#5d8d70 55%,#acc3a0 100%); overflow:hidden; }
+    #trl-yunqi-flow-v1 .trl-visual::before,#trl-yunqi-flow-v1 .trl-visual::after { content:""; position:absolute; border:1px solid rgba(255,255,255,.35); border-radius:50%; }
+    #trl-yunqi-flow-v1 .trl-visual::before { width:152px; height:152px; right:-30px; top:45px; }
+    #trl-yunqi-flow-v1 .trl-visual::after { width:104px; height:104px; right:-4px; top:69px; }
+    #trl-yunqi-flow-v1 .trl-kicker { position:relative; z-index:1; font-size:10px; opacity:.85; }
+    #trl-yunqi-flow-v1 .trl-visual h2 { position:relative; z-index:1; margin:7px 0 0; font-family:"Noto Serif SC","STSong",serif; font-size:24px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-visual p { position:relative; z-index:1; width:72%; margin:7px 0 0; font-size:11px; line-height:1.55; }
+    #trl-yunqi-flow-v1 .trl-card-body { padding:15px; }
+    #trl-yunqi-flow-v1 .trl-brief { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    #trl-yunqi-flow-v1 .trl-brief-item { min-height:70px; padding:11px; border-radius:15px; background:#f0f5f1; }
+    #trl-yunqi-flow-v1 .trl-brief-item small { color:#697c72; font-size:9px; }
+    #trl-yunqi-flow-v1 .trl-brief-item strong { display:block; margin-top:5px; font-size:13px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-home-explain { margin:12px 0 0; color:#536a5e; font-size:11px; line-height:1.65; }
+    #trl-yunqi-flow-v1 .trl-advice-preview { display:flex; gap:8px; margin-top:11px; padding:10px 11px; border-radius:14px; background:#fff3e8; color:#604b3f; font-size:10px; line-height:1.55; }
+    #trl-yunqi-flow-v1 .trl-advice-preview i { flex:0 0 auto; width:15px; height:15px; color:#b86e42; }
+    #trl-yunqi-flow-v1 .trl-open { width:100%; min-height:47px; margin-top:13px; border:0; border-radius:15px; background:#24654e; color:#fff; display:flex; justify-content:center; align-items:center; gap:7px; font:inherit; font-size:12px; font-weight:500; cursor:pointer; }
+    #trl-yunqi-flow-v1 .trl-open i { width:16px; height:16px; }
+    #trl-yunqi-flow-v1 .trl-footnote { margin-top:11px; text-align:center; color:#7a8981; font-size:9px; }
+    #trl-yunqi-flow-v1 .trl-equal { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:13px; }
+    #trl-yunqi-flow-v1 .trl-equal div { min-height:76px; padding:12px; border:1px solid #dce6df; border-radius:16px; background:#fff; }
+    #trl-yunqi-flow-v1 .trl-equal small { color:#6d8076; font-size:9px; }
+    #trl-yunqi-flow-v1 .trl-equal strong { display:block; margin-top:5px; font-size:13px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-detail-head { position:relative; padding:17px 17px 26px; color:#f9fffa; background:radial-gradient(circle at 82% 24%,rgba(241,183,89,.82),transparent 20%),linear-gradient(145deg,#19493c,#3c7860 58%,#8da681); }
+    #trl-yunqi-flow-v1 .trl-detail-head .trl-status { padding:0; color:#fff; opacity:.88; }
+    #trl-yunqi-flow-v1 .trl-nav { display:grid; grid-template-columns:44px 1fr 44px; align-items:center; margin-top:13px; }
+    #trl-yunqi-flow-v1 .trl-nav button { width:44px; height:44px; border:1px solid rgba(255,255,255,.35); border-radius:50%; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; cursor:pointer; }
+    #trl-yunqi-flow-v1 .trl-nav h2 { margin:0; text-align:center; font-size:17px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-detail-title { margin-top:18px; font-family:"Noto Serif SC","STSong",serif; font-size:25px; line-height:1.4; }
+    #trl-yunqi-flow-v1 .trl-detail-sub { margin-top:7px; width:86%; color:rgba(250,255,251,.85); font-size:11px; line-height:1.6; }
+    #trl-yunqi-flow-v1 .trl-detail-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+    #trl-yunqi-flow-v1 .trl-detail-meta span { padding:5px 8px; border:1px solid rgba(255,255,255,.25); border-radius:99px; background:rgba(255,255,255,.1); font-size:9px; }
+    #trl-yunqi-flow-v1 .trl-detail-body { padding:16px 14px 26px; }
+    #trl-yunqi-flow-v1 .trl-notice { display:flex; gap:8px; padding:11px; border-radius:14px; background:#fff4e8; color:#675345; font-size:9px; line-height:1.55; }
+    #trl-yunqi-flow-v1 .trl-notice i { flex:0 0 auto; width:14px; height:14px; }
+    #trl-yunqi-flow-v1 .trl-detail-section { margin-top:18px; }
+    #trl-yunqi-flow-v1 .trl-detail-section h3 { margin:0; font-size:16px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-columns { margin-top:9px; overflow:hidden; border:1px solid #dce6df; border-radius:18px; background:#fff; }
+    #trl-yunqi-flow-v1 .trl-columns-head,.trl-columns-row { display:grid; grid-template-columns:38% 62%; }
+    #trl-yunqi-flow-v1 .trl-columns-head { background:#e8f3ed; color:#33604d; font-size:10px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-columns-head span,#trl-yunqi-flow-v1 .trl-columns-row span { padding:10px 11px; }
+    #trl-yunqi-flow-v1 .trl-columns-head span:first-child,#trl-yunqi-flow-v1 .trl-columns-row span:first-child { border-right:1px solid #dce6df; }
+    #trl-yunqi-flow-v1 .trl-columns-row { border-top:1px solid #e3eae5; font-size:10px; line-height:1.55; }
+    #trl-yunqi-flow-v1 .trl-term { color:#2d5f49; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-plain { color:#546a5f; }
+    #trl-yunqi-flow-v1 .trl-context-card { margin-top:9px; padding:13px; border:1px solid #dce6df; border-radius:17px; background:#fff; }
+    #trl-yunqi-flow-v1 .trl-context-line { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid #e6ece8; font-size:10px; }
+    #trl-yunqi-flow-v1 .trl-context-line:last-child { border-bottom:0; }
+    #trl-yunqi-flow-v1 .trl-context-line span:first-child { color:#6b7d74; }
+    #trl-yunqi-flow-v1 .trl-context-line span:last-child { text-align:right; color:#284d3e; }
+    #trl-yunqi-flow-v1 .trl-life-advice { display:grid; gap:8px; margin-top:9px; }
+    #trl-yunqi-flow-v1 .trl-life-row { display:grid; grid-template-columns:36px 1fr; gap:9px; align-items:start; padding:11px; border:1px solid #dce6df; border-radius:15px; background:#fff; }
+    #trl-yunqi-flow-v1 .trl-life-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:12px; background:#e5f1e9; color:#21674d; }
+    #trl-yunqi-flow-v1 .trl-life-row strong { display:block; font-size:11px; font-weight:500; }
+    #trl-yunqi-flow-v1 .trl-life-row p { margin:4px 0 0; color:#5c7166; font-size:10px; line-height:1.55; }
+    #trl-yunqi-flow-v1 .trl-basis { width:100%; min-height:48px; margin-top:10px; border:1px solid #d9e4dc; border-radius:15px; background:#fff; color:#2c604a; font:inherit; font-size:11px; cursor:pointer; }
+    #trl-yunqi-flow-v1 .trl-disclaimer { margin-top:12px; color:#76867e; font-size:9px; line-height:1.55; text-align:center; }
+    @media(max-width:420px){ #trl-yunqi-flow-v1 { padding:0; } #trl-yunqi-flow-v1 .trl-phone { border-radius:24px; } }
+  </style>
+
+  <div class="trl-switcher" aria-label="页面预览切换">
+    <button type="button" aria-pressed="true" data-view="home">首页板块</button>
+    <button type="button" aria-pressed="false" data-view="detail">详细解读</button>
+  </div>
+
+  <main class="trl-phone" aria-label="五运六气首页板块与详情页样板">
+    <section class="trl-view trl-home-view is-active" data-panel="home">
+      <div class="trl-status"><span>9:41</span><span class="trl-system"><i data-lucide="signal" aria-hidden="true"></i><i data-lucide="wifi" aria-hidden="true"></i><i data-lucide="battery-full" aria-hidden="true"></i></span></div>
+      <div class="trl-home">
+        <div class="trl-home-context"><span>今日节律解读</span><span>接续 AI 综合分析</span></div>
+        <section class="trl-yunqi-card">
+          <div class="trl-visual">
+            <div class="trl-kicker">五运六气 · 专业节律入口</div>
+            <h2>天地节律</h2>
+            <p>理解当前时令与环境背景，为今天的生活安排提供温和参考。</p>
+          </div>
+          <div class="trl-card-body">
+            <div class="trl-brief">
+              <div class="trl-brief-item"><small>年度与阶段</small><strong>运气结构摘要</strong></div>
+              <div class="trl-brief-item"><small>当前节气</small><strong>时令阶段说明</strong></div>
+            </div>
+            <p class="trl-home-explain">今天的解读重点是顺应当下季节变化，保持饮食、作息与活动节奏稳定，不把传统术语解释为疾病或必然结果。</p>
+            <div class="trl-advice-preview"><i data-lucide="leaf" aria-hidden="true"></i><span><strong>今日生活提示：</strong>注意补充饮水，活动量循序增加，晚间给身体留出安静过渡时间。</span></div>
+            <button class="trl-open" type="button"><span>查看五运六气详细解读</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+            <div class="trl-footnote">示例排版 · 正式术语由确定性引擎计算并经专家审核</div>
+          </div>
+        </section>
+        <div class="trl-equal" aria-label="同等级双核心入口提示">
+          <div><small>当前入口</small><strong>五运六气</strong></div>
+          <div><small>同等级入口</small><strong>星辰节律</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="trl-view trl-detail-view" data-panel="detail">
+      <header class="trl-detail-head">
+        <div class="trl-status"><span>9:41</span><span class="trl-system"><i data-lucide="signal" aria-hidden="true"></i><i data-lucide="wifi" aria-hidden="true"></i><i data-lucide="battery-full" aria-hidden="true"></i></span></div>
+        <nav class="trl-nav" aria-label="详情页导航">
+          <button class="trl-back" type="button" aria-label="返回首页板块"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+          <h2>五运六气</h2>
+          <button type="button" aria-label="更多选项"><i data-lucide="ellipsis" aria-hidden="true"></i></button>
+        </nav>
+        <div class="trl-detail-title">今日天地节律解读</div>
+        <p class="trl-detail-sub">先看通俗结论，再按需要了解专业术语、节气环境与生活建议。</p>
+        <div class="trl-detail-meta"><span>确定性引擎结果</span><span>09:05计算</span><span>示例数据</span></div>
+      </header>
+
+      <div class="trl-detail-body">
+        <div class="trl-notice"><i data-lucide="info" aria-hidden="true"></i><span>以下内容用于确认页面结构，具体运气结果与解释须通过专家和黄金测试集审核后才能上线。</span></div>
+
+        <section class="trl-detail-section">
+          <h3>专业术语与通俗解释</h3>
+          <div class="trl-columns">
+            <div class="trl-columns-head"><span>专业术语</span><span>普通人怎么理解</span></div>
+            <div class="trl-columns-row"><span class="trl-term">主运</span><span class="trl-plain">描述这一年度五运变化的主要背景，用来理解整体时令倾向。</span></div>
+            <div class="trl-columns-row"><span class="trl-term">客运</span><span class="trl-plain">描述年度中随时间推进的阶段变化，需要结合当前日期理解。</span></div>
+            <div class="trl-columns-row"><span class="trl-term">司天</span><span class="trl-plain">传统体系中用于描述上半年气候节律背景的结构位置。</span></div>
+            <div class="trl-columns-row"><span class="trl-term">在泉</span><span class="trl-plain">传统体系中用于描述下半年气候节律背景的结构位置。</span></div>
+            <div class="trl-columns-row"><span class="trl-term">当前节气</span><span class="trl-plain">说明现在处于一年中的哪个自然阶段，以及昼夜、温度等常见变化。</span></div>
+            <div class="trl-columns-row"><span class="trl-term">运气相合</span><span class="trl-plain">表示多个节律因素需要放在一起观察，不等同于吉凶或健康结论。</span></div>
+          </div>
+        </section>
+
+        <section class="trl-detail-section">
+          <h3>节气与环境背景</h3>
+          <div class="trl-context-card">
+            <div class="trl-context-line"><span>当前节气</span><span>由确定性历法服务返回</span></div>
+            <div class="trl-context-line"><span>所在地</span><span>当前地点 · 需用户授权</span></div>
+            <div class="trl-context-line"><span>天气 / 空气</span><span>数据暂不可用时明确降级</span></div>
+            <div class="trl-context-line"><span>与生命参考分关系</span><span>仅作解释背景，不参与加减分</span></div>
+          </div>
+        </section>
+
+        <section class="trl-detail-section">
+          <h3>今天的生活建议</h3>
+          <div class="trl-life-advice">
+            <div class="trl-life-row"><span class="trl-life-icon"><i data-lucide="utensils" aria-hidden="true"></i></span><span><strong>饮食</strong><p>保持三餐节奏稳定，按真实天气与个人感受选择温和、易执行的搭配。</p></span></div>
+            <div class="trl-life-row"><span class="trl-life-icon"><i data-lucide="moon" aria-hidden="true"></i></span><span><strong>睡眠</strong><p>晚间预留安静过渡时间，具体安排结合今日睡眠数据与个人基线。</p></span></div>
+            <div class="trl-life-row"><span class="trl-life-icon"><i data-lucide="footprints" aria-hidden="true"></i></span><span><strong>活动</strong><p>以轻松、循序的活动为主，不把节气或运气术语当作运动处方。</p></span></div>
+            <div class="trl-life-row"><span class="trl-life-icon"><i data-lucide="heart" aria-hidden="true"></i></span><span><strong>情绪</strong><p>给自己留出短暂整理与呼吸的空间，避免绝对化预测影响感受。</p></span></div>
+          </div>
+          <button class="trl-basis" type="button">查看计算依据、来源与更新时间</button>
+          <p class="trl-disclaimer">传统文化与一般生活方式参考 · 非医疗诊断 · 如有持续不适请咨询专业人士</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const root = document.getElementById('trl-yunqi-flow-v1');
+      const show = (name) => {
+        root.querySelectorAll('.trl-view').forEach((panel) => panel.classList.toggle('is-active', panel.dataset.panel === name));
+        root.querySelectorAll('.trl-switcher button').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.view === name)));
+      };
+      root.querySelectorAll('.trl-switcher button').forEach((button) => button.addEventListener('click', () => show(button.dataset.view)));
+      root.querySelector('.trl-open').addEventListener('click', () => show('detail'));
+      root.querySelector('.trl-back').addEventListener('click', () => show('home'));
+      if (window.location.hash === '#detail') show('detail');
+    })();
+  </script>
+</div>

@@ -1,0 +1,147 @@
+<div id="trl-daily-advice-module-v1">
+  <style>
+    #trl-daily-advice-module-v1 { display:grid; place-items:center; padding:20px 0; font-family:"Noto Sans SC","Microsoft YaHei",sans-serif; color:#17251f; }
+    #trl-daily-advice-module-v1 * { box-sizing:border-box; }
+    #trl-daily-advice-module-v1 .trl-phone { width:min(390px,100%); overflow:hidden; border:1px solid #d7e2da; border-radius:35px; background:#f3f7f4; box-shadow:0 26px 66px rgba(36,67,52,.18); }
+    #trl-daily-advice-module-v1 .trl-status { display:flex; justify-content:space-between; align-items:center; padding:17px 18px 0; color:#51675c; font-size:10px; }
+    #trl-daily-advice-module-v1 .trl-system { display:flex; align-items:center; gap:5px; }
+    #trl-daily-advice-module-v1 .trl-system i { width:12px; height:12px; }
+    #trl-daily-advice-module-v1 .trl-body { padding:15px 15px 27px; }
+    #trl-daily-advice-module-v1 h2,#trl-daily-advice-module-v1 h3,#trl-daily-advice-module-v1 p { margin:0; }
+    #trl-daily-advice-module-v1 .trl-heading { display:flex; justify-content:space-between; align-items:end; }
+    #trl-daily-advice-module-v1 .trl-heading h2 { font-size:18px; font-weight:500; }
+    #trl-daily-advice-module-v1 .trl-heading span { color:#6d8076; font-size:10px; }
+    #trl-daily-advice-module-v1 .trl-intro { margin-top:7px; color:#5c7166; font-size:11px; line-height:1.6; }
+    #trl-daily-advice-module-v1 .trl-priority { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; padding:12px 13px; border:1px solid #d5e4da; border-radius:16px; background:linear-gradient(125deg,#e1f1e7,#fff1e6); }
+    #trl-daily-advice-module-v1 .trl-priority-main { display:flex; align-items:center; gap:9px; }
+    #trl-daily-advice-module-v1 .trl-priority-icon { width:34px; height:34px; display:grid; place-items:center; flex:0 0 auto; border-radius:12px; color:#246a50; background:#fff; }
+    #trl-daily-advice-module-v1 .trl-priority small { display:block; color:#61766a; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-priority strong { display:block; margin-top:3px; font-size:12px; font-weight:500; }
+    #trl-daily-advice-module-v1 .trl-priority button { min-width:44px; min-height:44px; border:0; border-radius:50%; background:#24664e; color:#fff; display:grid; place-items:center; cursor:pointer; }
+    #trl-daily-advice-module-v1 .trl-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:13px; }
+    #trl-daily-advice-module-v1 .trl-advice { min-height:142px; border:1px solid #dce6df; border-radius:18px; padding:12px; background:#fff; color:#17251f; text-align:left; font:inherit; cursor:pointer; }
+    #trl-daily-advice-module-v1 .trl-advice[aria-pressed="true"] { border-color:#8fbda8; background:#eaf4ee; box-shadow:0 0 0 2px rgba(36,103,77,.08); }
+    #trl-daily-advice-module-v1 .trl-card-top { display:flex; justify-content:space-between; align-items:center; }
+    #trl-daily-advice-module-v1 .trl-card-icon { width:34px; height:34px; display:grid; place-items:center; border-radius:12px; color:#246b50; background:#e6f2eb; }
+    #trl-daily-advice-module-v1 .trl-card-icon i { width:17px; height:17px; }
+    #trl-daily-advice-module-v1 .trl-rank { color:#75867d; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-advice h3 { margin-top:10px; font-size:14px; font-weight:500; }
+    #trl-daily-advice-module-v1 .trl-advice p { margin-top:5px; color:#52695e; font-size:10px; line-height:1.55; }
+    #trl-daily-advice-module-v1 .trl-source-line { display:flex; align-items:center; gap:4px; margin-top:8px; color:#7b8981; font-size:8px; }
+    #trl-daily-advice-module-v1 .trl-source-line i { width:11px; height:11px; }
+    #trl-daily-advice-module-v1 .trl-detail { margin-top:12px; overflow:hidden; border:1px solid #dce6df; border-radius:20px; background:#fff; }
+    #trl-daily-advice-module-v1 .trl-detail-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px; background:#eef6f1; }
+    #trl-daily-advice-module-v1 .trl-detail-title { display:flex; align-items:center; gap:9px; }
+    #trl-daily-advice-module-v1 .trl-detail-title i { width:18px; height:18px; color:#226a4e; }
+    #trl-daily-advice-module-v1 .trl-detail-title small { display:block; color:#6c7f74; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-detail-title strong { display:block; margin-top:2px; font-size:13px; font-weight:500; }
+    #trl-daily-advice-module-v1 .trl-detail-status { padding:5px 8px; border-radius:99px; background:#fff; color:#3e6755; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-detail-body { padding:14px; }
+    #trl-daily-advice-module-v1 .trl-action-label { color:#687b70; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-action-copy { margin-top:5px; font-family:"Noto Serif SC","STSong",serif; font-size:17px; line-height:1.55; font-weight:500; }
+    #trl-daily-advice-module-v1 .trl-steps { display:grid; gap:7px; margin-top:12px; }
+    #trl-daily-advice-module-v1 .trl-step { display:grid; grid-template-columns:23px 1fr; gap:8px; align-items:start; color:#52685d; font-size:10px; line-height:1.55; }
+    #trl-daily-advice-module-v1 .trl-step span:first-child { width:23px; height:23px; display:grid; place-items:center; border-radius:50%; background:#e7f2eb; color:#24674e; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-why { margin-top:12px; padding-top:11px; border-top:1px solid #e4ebe6; }
+    #trl-daily-advice-module-v1 .trl-why button { width:100%; min-height:44px; display:flex; justify-content:space-between; align-items:center; border:0; background:transparent; color:#32604d; font:inherit; font-size:10px; cursor:pointer; }
+    #trl-daily-advice-module-v1 .trl-why button i { width:15px; height:15px; transition:transform .2s ease; }
+    #trl-daily-advice-module-v1 .trl-why button[aria-expanded="true"] i { transform:rotate(180deg); }
+    #trl-daily-advice-module-v1 .trl-why-copy { display:none; color:#64766d; font-size:9px; line-height:1.6; }
+    #trl-daily-advice-module-v1 .trl-why-copy.is-open { display:block; }
+    #trl-daily-advice-module-v1 .trl-feedback { display:flex; justify-content:space-between; align-items:center; margin-top:12px; color:#7b8981; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-feedback-actions { display:flex; gap:5px; }
+    #trl-daily-advice-module-v1 .trl-feedback button { min-height:32px; border:1px solid #dce5df; border-radius:9px; padding:0 8px; background:#f8faf8; color:#65776e; font:inherit; font-size:9px; cursor:pointer; }
+    #trl-daily-advice-module-v1 .trl-rule { margin-top:12px; padding:10px 11px; border-radius:14px; background:#f0f4f1; color:#64776d; font-size:9px; line-height:1.6; }
+    #trl-daily-advice-module-v1 .trl-next { margin-top:13px; padding:13px; border:1px solid #dce6df; border-radius:16px; background:#fff; }
+    #trl-daily-advice-module-v1 .trl-next small { color:#74847b; font-size:9px; }
+    #trl-daily-advice-module-v1 .trl-next strong { display:block; margin-top:4px; font-size:13px; font-weight:500; }
+    @media(max-width:360px){ #trl-daily-advice-module-v1 .trl-advice { min-height:150px; } }
+    @media(max-width:420px){ #trl-daily-advice-module-v1 { padding:0; } #trl-daily-advice-module-v1 .trl-phone { border-radius:24px; } }
+  </style>
+
+  <main class="trl-phone" aria-label="首页四类生活建议板块样板">
+    <div class="trl-status"><span>9:41</span><span class="trl-system"><i data-lucide="signal" aria-hidden="true"></i><i data-lucide="wifi" aria-hidden="true"></i><i data-lucide="battery-full" aria-hidden="true"></i></span></div>
+    <div class="trl-body">
+      <div class="trl-heading"><h2>今天怎样照顾自己</h2><span>09:12 更新</span></div>
+      <p class="trl-intro">四类建议已合并重复内容。先看摘要，点击任意一项查看更具体的做法与依据。</p>
+
+      <section class="trl-priority" aria-label="AI今日优先行动">
+        <div class="trl-priority-main"><span class="trl-priority-icon"><i data-lucide="sparkles" aria-hidden="true"></i></span><span><small>AI今日优先行动 · 已在上方展示</small><strong>稳住节奏，再逐步增加活动</strong></span></div>
+        <button type="button" aria-label="返回查看AI今日优先行动"><i data-lucide="arrow-up" aria-hidden="true"></i></button>
+      </section>
+
+      <div class="trl-grid" aria-label="四类生活建议">
+        <button class="trl-advice" type="button" aria-pressed="false" data-key="diet">
+          <span class="trl-card-top"><span class="trl-card-icon"><i data-lucide="utensils" aria-hidden="true"></i></span><span class="trl-rank">辅助建议</span></span>
+          <h3>饮食</h3><p>保持三餐稳定，按口渴感适量补水。</p>
+          <span class="trl-source-line"><i data-lucide="layers-2" aria-hidden="true"></i>生活规律＋节气背景</span>
+        </button>
+        <button class="trl-advice" type="button" aria-pressed="true" data-key="sleep">
+          <span class="trl-card-top"><span class="trl-card-icon"><i data-lucide="moon" aria-hidden="true"></i></span><span class="trl-rank">优先关注</span></span>
+          <h3>睡眠</h3><p>今晚提前收尾，为入睡留出缓冲。</p>
+          <span class="trl-source-line"><i data-lucide="layers-2" aria-hidden="true"></i>睡眠数据＋个人基线</span>
+        </button>
+        <button class="trl-advice" type="button" aria-pressed="false" data-key="activity">
+          <span class="trl-card-top"><span class="trl-card-icon"><i data-lucide="footprints" aria-hidden="true"></i></span><span class="trl-rank">辅助建议</span></span>
+          <h3>活动</h3><p>安排一段轻松步行，不追求强度。</p>
+          <span class="trl-source-line"><i data-lucide="layers-2" aria-hidden="true"></i>活动量＋恢复状态</span>
+        </button>
+        <button class="trl-advice" type="button" aria-pressed="false" data-key="emotion">
+          <span class="trl-card-top"><span class="trl-card-icon"><i data-lucide="heart" aria-hidden="true"></i></span><span class="trl-rank">自我观察</span></span>
+          <h3>情绪</h3><p>减少连续信息输入，留一点安静空间。</p>
+          <span class="trl-source-line"><i data-lucide="layers-2" aria-hidden="true"></i>用户反馈＋节律提示</span>
+        </button>
+      </div>
+
+      <section class="trl-detail" aria-live="polite">
+        <div class="trl-detail-head"><span class="trl-detail-title"><i data-lucide="moon" aria-hidden="true" id="trl-detail-icon"></i><span><small id="trl-detail-kicker">睡眠 · 今日辅助建议</small><strong id="trl-detail-name">今晚提前进入安静节奏</strong></span></span><span class="trl-detail-status" id="trl-detail-status">优先关注</span></div>
+        <div class="trl-detail-body">
+          <div class="trl-action-label">建议怎么做</div>
+          <div class="trl-action-copy" id="trl-detail-action">比平时提前30分钟结束高刺激活动，为入睡保留稳定的过渡时间。</div>
+          <div class="trl-steps" id="trl-detail-steps">
+            <div class="trl-step"><span>1</span><div>睡前降低屏幕亮度，并暂停需要持续回应的信息。</div></div>
+            <div class="trl-step"><span>2</span><div>选择一个熟悉、容易坚持的放松动作，不要求一次做到完美。</div></div>
+          </div>
+          <div class="trl-why">
+            <button type="button" aria-expanded="false"><span>查看建议依据与数据来源</span><i data-lucide="chevron-down" aria-hidden="true"></i></button>
+            <p class="trl-why-copy" id="trl-why-copy">主要依据：昨夜睡眠相对近期个人基线略少，恢复准备度处于中等状态。五运六气和星辰节律只提供解释背景，不参与生命参考分，也不单独形成健康结论。</p>
+          </div>
+          <div class="trl-feedback"><span>不适合时可以跳过或调整</span><span class="trl-feedback-actions"><button type="button">已完成</button><button type="button">换一个</button></span></div>
+        </div>
+      </section>
+
+      <div class="trl-rule">去重规则：同一行动只在“AI今日优先行动”中作为主任务出现；四类建议保留分类摘要和补充步骤，不重复制造四份相同结论。</div>
+      <section class="trl-next"><small>下一板块</small><strong>我的重点状态与今日记录 →</strong></section>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const root = document.getElementById('trl-daily-advice-module-v1');
+      const data = {
+        diet: { icon:'utensils', kicker:'饮食 · 今日辅助建议', name:'让三餐节奏更稳定', status:'辅助建议', action:'按日常作息保持三餐时间，口渴时及时补水，不用为了节气提示突然改变饮食。', steps:['优先选择熟悉、容易准备的食物搭配。','天气与空气数据不可用时，不生成针对性的环境结论。'], why:'主要依据：用户自愿记录的进餐规律与当前节气背景。节气只用于选择经过审核的通俗提示，不用于疾病判断。' },
+        sleep: { icon:'moon', kicker:'睡眠 · 今日辅助建议', name:'今晚提前进入安静节奏', status:'优先关注', action:'比平时提前30分钟结束高刺激活动，为入睡保留稳定的过渡时间。', steps:['睡前降低屏幕亮度，并暂停需要持续回应的信息。','选择一个熟悉、容易坚持的放松动作，不要求一次做到完美。'], why:'主要依据：昨夜睡眠相对近期个人基线略少，恢复准备度处于中等状态。五运六气和星辰节律只提供解释背景，不参与生命参考分，也不单独形成健康结论。' },
+        activity: { icon:'footprints', kicker:'活动 · 今日辅助建议', name:'用轻松活动唤醒身体', status:'辅助建议', action:'午后选择10–15分钟轻松步行，以能自然说话的感受为准，不追求额外强度。', steps:['久坐一段时间后先起身活动，再判断是否继续。','如感到明显不适，停止活动并按实际需要寻求专业帮助。'], why:'主要依据：当前活动完成度与恢复状态。目标用于帮助安排日常活动，不是医学标准，也不会因步数无限增加而持续加分。' },
+        emotion: { icon:'heart', kicker:'情绪 · 今日自我观察', name:'给思绪留一段缓冲', status:'自我观察', action:'安排5分钟不需要回应任何人的安静时间，只记录当下感受，不急着下结论。', steps:['用一两个词记录精力、压力或情绪。','未填写主观感受时，系统不会由AI推测或补零。'], why:'主要依据：用户主动反馈与经过审核的开放式节律提示。星辰节律只用于提出问题，不预测情绪和事件。' }
+      };
+      const icon = root.querySelector('#trl-detail-icon');
+      const kicker = root.querySelector('#trl-detail-kicker');
+      const name = root.querySelector('#trl-detail-name');
+      const status = root.querySelector('#trl-detail-status');
+      const action = root.querySelector('#trl-detail-action');
+      const steps = root.querySelector('#trl-detail-steps');
+      const whyCopy = root.querySelector('#trl-why-copy');
+      root.querySelectorAll('.trl-advice').forEach((button) => button.addEventListener('click', () => {
+        const item = data[button.dataset.key];
+        root.querySelectorAll('.trl-advice').forEach((candidate) => candidate.setAttribute('aria-pressed','false'));
+        button.setAttribute('aria-pressed','true');
+        icon.setAttribute('data-lucide', item.icon); kicker.textContent=item.kicker; name.textContent=item.name; status.textContent=item.status; action.textContent=item.action; whyCopy.textContent=item.why;
+        steps.innerHTML=item.steps.map((copy,index)=>`<div class="trl-step"><span>${index+1}</span><div>${copy}</div></div>`).join('');
+        if (window.lucide) window.lucide.createIcons({attrs:{width:16,height:16}});
+      }));
+      const toggle = root.querySelector('.trl-why button');
+      const copy = root.querySelector('.trl-why-copy');
+      toggle.addEventListener('click', () => { const open=toggle.getAttribute('aria-expanded')==='true'; toggle.setAttribute('aria-expanded',String(!open)); copy.classList.toggle('is-open',!open); });
+    })();
+  </script>
+</div>

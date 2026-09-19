@@ -27,9 +27,11 @@ class _TianrenluAppState extends State<TianrenluApp> {
   late final Future<void> _restoreFuture;
   bool _accountActionHandled = false;
   LifeThemeMode _themeMode =
-      const String.fromEnvironment('LIFE_THEME') == 'obsidian'
-          ? LifeThemeMode.obsidian
-          : LifeThemeMode.forest;
+      switch (const String.fromEnvironment('LIFE_THEME')) {
+    'obsidian' => LifeThemeMode.obsidian,
+    'vitality' => LifeThemeMode.vitality,
+    _ => LifeThemeMode.forest,
+  };
 
   @override
   void initState() {

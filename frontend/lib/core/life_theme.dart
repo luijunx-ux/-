@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum LifeThemeMode { forest, obsidian }
+enum LifeThemeMode { forest, obsidian, vitality }
 
 @immutable
 class LifeThemeTokens extends ThemeExtension<LifeThemeTokens> {
@@ -58,6 +58,20 @@ class LifeThemeTokens extends ThemeExtension<LifeThemeTokens> {
     textSecondary: Color(0xFFB4BED1),
   );
 
+  static const LifeThemeTokens vitality = LifeThemeTokens(
+    mode: LifeThemeMode.vitality,
+    backgroundTop: Color(0xFFE8F1EB),
+    backgroundBottom: Color(0xFFF4F7F4),
+    surface: Color(0xFFFFFFFF),
+    surfaceStrong: Color(0xFFF0F4F1),
+    outline: Color(0xFFDFE7E1),
+    accent: Color(0xFF176B4D),
+    accentSoft: Color(0xFFE6F2EB),
+    glow: Color(0xFFE6AC42),
+    textPrimary: Color(0xFF17251F),
+    textSecondary: Color(0xFF557064),
+  );
+
   @override
   LifeThemeTokens copyWith({LifeThemeMode? mode}) => this;
 
@@ -82,9 +96,11 @@ class LifeThemeTokens extends ThemeExtension<LifeThemeTokens> {
 }
 
 ThemeData buildLifeTheme(LifeThemeMode mode) {
-  final LifeThemeTokens tokens = mode == LifeThemeMode.forest
-      ? LifeThemeTokens.forest
-      : LifeThemeTokens.obsidian;
+  final LifeThemeTokens tokens = switch (mode) {
+    LifeThemeMode.forest => LifeThemeTokens.forest,
+    LifeThemeMode.obsidian => LifeThemeTokens.obsidian,
+    LifeThemeMode.vitality => LifeThemeTokens.vitality,
+  };
   final bool dark = mode == LifeThemeMode.obsidian;
   return ThemeData(
     useMaterial3: true,

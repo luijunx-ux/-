@@ -1,0 +1,160 @@
+<div id="trl-ai-analysis-page-v1">
+  <style>
+    #trl-ai-analysis-page-v1 { display:grid; place-items:center; padding:22px 0; font-family:"Noto Sans SC","Microsoft YaHei",sans-serif; color:#17251f; }
+    #trl-ai-analysis-page-v1 * { box-sizing:border-box; }
+    #trl-ai-analysis-page-v1 .trl-screen { width:min(390px,100%); overflow:hidden; border:1px solid #d9e4dc; border-radius:36px; background:#f3f7f4; box-shadow:0 28px 72px rgba(35,67,52,.18); }
+    #trl-ai-analysis-page-v1 .trl-top { position:relative; min-height:272px; padding:17px 18px 22px; color:#f8fff9; background:radial-gradient(circle at 74% 20%,rgba(255,205,142,.78),transparent 25%),radial-gradient(circle at 55% 52%,rgba(103,153,167,.62),transparent 31%),linear-gradient(155deg,#173f36 0%,#2b6655 52%,#6d8e74 100%); }
+    #trl-ai-analysis-page-v1 .trl-top::after { content:""; position:absolute; inset:auto -60px -92px 70px; height:170px; border-radius:50%; background:rgba(227,240,229,.11); transform:rotate(-9deg); }
+    #trl-ai-analysis-page-v1 .trl-status { display:flex; justify-content:space-between; align-items:center; font-size:11px; opacity:.9; }
+    #trl-ai-analysis-page-v1 .trl-icons { display:flex; gap:6px; align-items:center; }
+    #trl-ai-analysis-page-v1 .trl-icons i { width:13px; height:13px; }
+    #trl-ai-analysis-page-v1 .trl-nav { position:relative; z-index:1; display:grid; grid-template-columns:44px 1fr 44px; align-items:center; margin-top:14px; }
+    #trl-ai-analysis-page-v1 .trl-nav button { width:44px; height:44px; border:1px solid rgba(255,255,255,.34); border-radius:50%; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; cursor:pointer; }
+    #trl-ai-analysis-page-v1 .trl-nav h1 { margin:0; text-align:center; font-size:17px; font-weight:500; }
+    #trl-ai-analysis-page-v1 .trl-orb-wrap { position:relative; z-index:1; display:flex; justify-content:center; margin-top:20px; }
+    #trl-ai-analysis-page-v1 .trl-orb { width:96px; height:96px; border-radius:50%; background:radial-gradient(circle at 32% 25%,#ffeac0 0 8%,#ef9b72 24%,#8ea7cc 48%,#3c6e69 70%,#193f38 100%); box-shadow:0 0 0 1px rgba(255,255,255,.36),0 0 32px rgba(251,188,129,.38),inset -10px -13px 20px rgba(17,48,43,.28); }
+    #trl-ai-analysis-page-v1 .trl-generated { position:relative; z-index:1; margin-top:12px; text-align:center; font-size:10px; color:rgba(250,255,251,.82); }
+    #trl-ai-analysis-page-v1 .trl-body { position:relative; z-index:2; margin-top:-16px; padding:0 15px 26px; }
+    #trl-ai-analysis-page-v1 .trl-summary { padding:19px 17px 17px; border:1px solid #dfe8e2; border-radius:23px; background:#fff; box-shadow:0 7px 22px rgba(35,69,52,.09); }
+    #trl-ai-analysis-page-v1 h2,#trl-ai-analysis-page-v1 h3,#trl-ai-analysis-page-v1 p { margin:0; }
+    #trl-ai-analysis-page-v1 .trl-eyebrow { color:#2b7257; font-size:11px; font-weight:500; }
+    #trl-ai-analysis-page-v1 .trl-summary h2 { margin-top:7px; font-family:"Noto Serif SC","STSong",serif; font-size:23px; line-height:1.42; font-weight:500; }
+    #trl-ai-analysis-page-v1 .trl-summary-copy { margin-top:10px; color:#53695e; font-size:12px; line-height:1.72; }
+    #trl-ai-analysis-page-v1 .trl-state { display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+    #trl-ai-analysis-page-v1 .trl-state span { padding:6px 9px; border-radius:99px; color:#38634f; background:#eaf4ee; font-size:10px; }
+    #trl-ai-analysis-page-v1 .trl-section { margin-top:20px; }
+    #trl-ai-analysis-page-v1 .trl-section-head { display:flex; justify-content:space-between; align-items:end; padding:0 2px; }
+    #trl-ai-analysis-page-v1 .trl-section h3 { font-size:16px; font-weight:500; }
+    #trl-ai-analysis-page-v1 .trl-section-note { color:#73837a; font-size:10px; }
+    #trl-ai-analysis-page-v1 .trl-evidence-list { margin-top:10px; overflow:hidden; border:1px solid #dfe8e2; border-radius:20px; background:#fff; }
+    #trl-ai-analysis-page-v1 .trl-evidence { width:100%; min-height:76px; display:grid; grid-template-columns:38px 1fr auto; align-items:center; gap:10px; padding:12px 13px; border:0; border-bottom:1px solid #e5ebe7; background:#fff; color:#17251f; text-align:left; font:inherit; cursor:pointer; }
+    #trl-ai-analysis-page-v1 .trl-evidence:last-child { border-bottom:0; }
+    #trl-ai-analysis-page-v1 .trl-evidence[aria-pressed="true"] { background:#edf6f1; }
+    #trl-ai-analysis-page-v1 .trl-evidence-icon { width:38px; height:38px; display:grid; place-items:center; border-radius:13px; color:#226d50; background:#e2f1e8; }
+    #trl-ai-analysis-page-v1 .trl-evidence-title { display:block; color:#60736a; font-size:10px; }
+    #trl-ai-analysis-page-v1 .trl-evidence-value { display:block; margin-top:4px; font-size:14px; font-weight:500; }
+    #trl-ai-analysis-page-v1 .trl-evidence-compare { color:#657970; font-size:10px; line-height:1.5; text-align:right; }
+    #trl-ai-analysis-page-v1 .trl-source { display:none; padding:10px 13px 11px 61px; color:#62756b; background:#edf6f1; font-size:10px; line-height:1.55; }
+    #trl-ai-analysis-page-v1 .trl-source.is-visible { display:block; }
+    #trl-ai-analysis-page-v1 .trl-action { margin-top:10px; padding:16px; border:1px solid #d4e4d8; border-radius:20px; background:linear-gradient(135deg,#e2f1e8 0%,#fff1e6 100%); }
+    #trl-ai-analysis-page-v1 .trl-action-label { display:flex; align-items:center; gap:7px; color:#256b50; font-size:11px; font-weight:500; }
+    #trl-ai-analysis-page-v1 .trl-action-label i { width:16px; height:16px; }
+    #trl-ai-analysis-page-v1 .trl-action strong { display:block; margin-top:9px; font-size:15px; line-height:1.6; font-weight:500; }
+    #trl-ai-analysis-page-v1 .trl-action p { margin-top:6px; color:#60736a; font-size:10px; line-height:1.55; }
+    #trl-ai-analysis-page-v1 .trl-accordion { margin-top:10px; border:1px solid #dfe8e2; border-radius:18px; background:#fff; overflow:hidden; }
+    #trl-ai-analysis-page-v1 .trl-accordion-toggle { width:100%; min-height:52px; display:flex; align-items:center; justify-content:space-between; border:0; padding:0 14px; background:#fff; color:#315c4a; font:inherit; font-size:12px; cursor:pointer; }
+    #trl-ai-analysis-page-v1 .trl-accordion-toggle i { width:16px; height:16px; transition:transform .2s ease; }
+    #trl-ai-analysis-page-v1 .trl-accordion-toggle[aria-expanded="true"] i { transform:rotate(180deg); }
+    #trl-ai-analysis-page-v1 .trl-accordion-copy { display:none; padding:0 14px 14px; color:#5e7167; font-size:10px; line-height:1.65; }
+    #trl-ai-analysis-page-v1 .trl-accordion-copy.is-open { display:block; }
+    #trl-ai-analysis-page-v1 .trl-questions { display:grid; gap:8px; margin-top:10px; }
+    #trl-ai-analysis-page-v1 .trl-question { min-height:45px; display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid #dfe8e2; border-radius:14px; padding:0 13px; background:#fff; color:#2d5746; text-align:left; font:inherit; font-size:11px; cursor:pointer; }
+    #trl-ai-analysis-page-v1 .trl-question i { flex:0 0 auto; width:15px; height:15px; }
+    #trl-ai-analysis-page-v1 .trl-ask { width:100%; min-height:49px; margin-top:10px; border:0; border-radius:15px; background:#24654e; color:#fff; display:flex; align-items:center; justify-content:center; gap:8px; font:inherit; font-size:12px; font-weight:500; cursor:pointer; }
+    #trl-ai-analysis-page-v1 .trl-ask i { width:17px; height:17px; }
+    #trl-ai-analysis-page-v1 .trl-footer { display:flex; justify-content:space-between; align-items:center; margin-top:15px; color:#75847c; font-size:9px; }
+    #trl-ai-analysis-page-v1 .trl-feedback { display:flex; gap:6px; }
+    #trl-ai-analysis-page-v1 .trl-feedback button { border:1px solid #d8e2dc; border-radius:9px; padding:5px 8px; background:#f9fbf9; color:#64776d; font:inherit; font-size:9px; cursor:pointer; }
+    #trl-ai-analysis-page-v1 .trl-toast { display:none; margin-top:9px; padding:9px 11px; border-radius:12px; color:#355b4b; background:#e4f1e8; font-size:10px; text-align:center; }
+    #trl-ai-analysis-page-v1 .trl-toast.is-visible { display:block; }
+    @media(max-width:420px){ #trl-ai-analysis-page-v1 { padding:0; } #trl-ai-analysis-page-v1 .trl-screen { border-radius:24px; } }
+  </style>
+
+  <main class="trl-screen" aria-label="天人律AI综合分析完整页面">
+    <header class="trl-top">
+      <div class="trl-status"><span>9:41</span><span class="trl-icons"><i data-lucide="signal" aria-hidden="true"></i><i data-lucide="wifi" aria-hidden="true"></i><i data-lucide="battery-full" aria-hidden="true"></i></span></div>
+      <nav class="trl-nav" aria-label="页面导航">
+        <button type="button" aria-label="返回首页"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+        <h1>今日综合分析</h1>
+        <button type="button" aria-label="更多选项"><i data-lucide="ellipsis" aria-hidden="true"></i></button>
+      </nav>
+      <div class="trl-orb-wrap"><div class="trl-orb" aria-label="天人律生命球"></div></div>
+      <div class="trl-generated">09:12 生成 · 使用 6/8 类有效数据</div>
+    </header>
+
+    <div class="trl-body">
+      <section class="trl-summary">
+        <div class="trl-eyebrow">今日核心判断</div>
+        <h2>今天先稳住节奏，<br>再逐步增加活动</h2>
+        <p class="trl-summary-copy">昨夜睡眠略少，恢复准备度处于中等水平；当前活动量温和，今天适合把重点放在规律与轻量行动上。</p>
+        <div class="trl-state" aria-label="分析状态"><span>生命参考分 76</span><span>建议适度调整</span><span>个人基线</span></div>
+      </section>
+
+      <section class="trl-section">
+        <div class="trl-section-head"><h3>主要依据</h3><span class="trl-section-note">点击查看数据来源</span></div>
+        <div class="trl-evidence-list">
+          <button class="trl-evidence" type="button" aria-pressed="false" data-source="sleep-source">
+            <span class="trl-evidence-icon"><i data-lucide="moon" aria-hidden="true"></i></span>
+            <span><span class="trl-evidence-title">睡眠时长</span><span class="trl-evidence-value">6小时42分</span></span>
+            <span class="trl-evidence-compare">较7日均值<br>少28分钟</span>
+          </button>
+          <div class="trl-source" id="sleep-source">来源：授权健康平台 · 昨夜记录 · 09:08同步</div>
+          <button class="trl-evidence" type="button" aria-pressed="false" data-source="ready-source">
+            <span class="trl-evidence-icon"><i data-lucide="battery-charging" aria-hidden="true"></i></span>
+            <span><span class="trl-evidence-title">恢复准备度</span><span class="trl-evidence-value">64 · 中等</span></span>
+            <span class="trl-evidence-compare">建议保留<br>恢复空间</span>
+          </button>
+          <div class="trl-source" id="ready-source">来源：兼容设备 · 当前仅展示，不重复计入生命参考分</div>
+          <button class="trl-evidence" type="button" aria-pressed="false" data-source="steps-source">
+            <span class="trl-evidence-icon"><i data-lucide="footprints" aria-hidden="true"></i></span>
+            <span><span class="trl-evidence-title">今日活动</span><span class="trl-evidence-value">4,286步</span></span>
+            <span class="trl-evidence-compare">个人目标<br>完成54%</span>
+          </button>
+          <div class="trl-source" id="steps-source">来源：授权健康平台 · 今日累计 · 09:08同步</div>
+        </div>
+      </section>
+
+      <section class="trl-section">
+        <div class="trl-section-head"><h3>今日优先行动</h3><span class="trl-section-note">只做一件最重要的事</span></div>
+        <div class="trl-action">
+          <div class="trl-action-label"><i data-lucide="sparkles" aria-hidden="true"></i><span>轻量行动 · 可自行调整</span></div>
+          <strong>午后安排 10–15 分钟轻松步行，晚间提前 30 分钟结束高刺激活动。</strong>
+          <p>以舒适感受为准，不必追求完成度；如持续不适，请咨询专业人士。</p>
+        </div>
+        <div class="trl-accordion">
+          <button class="trl-accordion-toggle" type="button" aria-expanded="false"><span>为什么这样建议</span><i data-lucide="chevron-down" aria-hidden="true"></i></button>
+          <p class="trl-accordion-copy">建议由规则引擎的结构化结果、近期个人基线和今日状态生成。五运六气与星辰节律提供文化与节律解释背景，不直接增加或减少生命参考分。当前未使用饮水和主观感受数据。</p>
+        </div>
+      </section>
+
+      <section class="trl-section">
+        <div class="trl-section-head"><h3>问问天人律</h3><span class="trl-section-note">围绕今天继续了解</span></div>
+        <div class="trl-questions">
+          <button class="trl-question" type="button"><span>我今天为什么需要调整节奏？</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button>
+          <button class="trl-question" type="button"><span>今天适合安排什么活动？</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button>
+          <button class="trl-question" type="button"><span>怎样改善今晚的休息准备？</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button>
+        </div>
+        <button class="trl-ask" type="button"><i data-lucide="message-circle" aria-hidden="true"></i><span>输入自己的问题</span></button>
+        <div class="trl-toast" role="status">已选择问题，正式版本将在问答页继续。</div>
+      </section>
+
+      <footer class="trl-footer"><span>生活方式参考 · 非医疗诊断</span><span class="trl-feedback"><button type="button">有帮助</button><button type="button">不适合我</button></span></footer>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const root = document.getElementById('trl-ai-analysis-page-v1');
+      root.querySelectorAll('.trl-evidence').forEach((button) => {
+        button.addEventListener('click', () => {
+          const source = root.querySelector('#' + button.dataset.source);
+          const wasOpen = button.getAttribute('aria-pressed') === 'true';
+          root.querySelectorAll('.trl-evidence').forEach((item) => item.setAttribute('aria-pressed','false'));
+          root.querySelectorAll('.trl-source').forEach((item) => item.classList.remove('is-visible'));
+          if (!wasOpen) { button.setAttribute('aria-pressed','true'); source.classList.add('is-visible'); }
+        });
+      });
+      const toggle = root.querySelector('.trl-accordion-toggle');
+      const explanation = root.querySelector('.trl-accordion-copy');
+      toggle.addEventListener('click', () => {
+        const open = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!open));
+        explanation.classList.toggle('is-open', !open);
+      });
+      const toast = root.querySelector('.trl-toast');
+      root.querySelectorAll('.trl-question, .trl-ask').forEach((button) => {
+        button.addEventListener('click', () => { toast.classList.add('is-visible'); });
+      });
+    })();
+  </script>
+</div>

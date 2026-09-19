@@ -1,0 +1,182 @@
+<div id="trl-focus-checkin-demo">
+  <style>
+    #trl-focus-checkin-demo {
+      min-height: 100vh;
+      padding: 24px 12px 40px;
+      box-sizing: border-box;
+      background: linear-gradient(180deg, #dfece3 0%, #f4f7f2 42%, #edf3ee 100%);
+      color: #1d3128;
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    #trl-focus-checkin-demo * { box-sizing: border-box; }
+    #trl-focus-checkin-demo .phone {
+      width: min(100%, 390px);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid rgba(42, 81, 61, .12);
+      border-radius: 32px;
+      background: #f7faf7;
+      box-shadow: 0 24px 60px rgba(37, 73, 55, .18);
+    }
+    #trl-focus-checkin-demo .hero {
+      padding: 27px 20px 18px;
+      background: linear-gradient(135deg, rgba(223,239,226,.96), rgba(246,250,245,.98));
+      border-bottom: 1px solid #e0e9e2;
+    }
+    #trl-focus-checkin-demo .eyebrow { font-size: 12px; color: #658071; letter-spacing: .06em; }
+    #trl-focus-checkin-demo h1 { margin: 7px 0 6px; font-size: 25px; line-height: 1.25; letter-spacing: -.03em; }
+    #trl-focus-checkin-demo .sub { margin: 0; font-size: 13px; line-height: 1.6; color: #61736a; }
+    #trl-focus-checkin-demo .progress {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 13px; padding: 6px 10px;
+      border-radius: 999px; background: #fff; color: #567064; font-size: 12px;
+      box-shadow: 0 4px 14px rgba(41,74,57,.08);
+    }
+    #trl-focus-checkin-demo .progress i { width: 15px; height: 15px; color: #3b805c; }
+    #trl-focus-checkin-demo .content { padding: 14px; }
+    #trl-focus-checkin-demo .card {
+      margin-bottom: 12px; padding: 16px; border-radius: 21px; background: #fff;
+      border: 1px solid #e4ebe5; box-shadow: 0 7px 22px rgba(50,78,62,.06);
+    }
+    #trl-focus-checkin-demo .card-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    #trl-focus-checkin-demo .card h2 { margin: 0; font-size: 17px; line-height: 1.35; }
+    #trl-focus-checkin-demo .label { font-size: 11px; color: #6b8175; background: #eff5f0; padding: 5px 8px; border-radius: 999px; white-space: nowrap; }
+    #trl-focus-checkin-demo .observed { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+    #trl-focus-checkin-demo .signal { padding: 11px 12px; background: #f6f8f5; border-radius: 14px; }
+    #trl-focus-checkin-demo .signal strong { display: block; font-size: 14px; margin-bottom: 3px; }
+    #trl-focus-checkin-demo .signal span { font-size: 11px; color: #728078; }
+    #trl-focus-checkin-demo .source { margin: 10px 1px 0; font-size: 10px; color: #849088; }
+    #trl-focus-checkin-demo .question { margin: 17px 0 8px; font-size: 13px; font-weight: 700; }
+    #trl-focus-checkin-demo .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    #trl-focus-checkin-demo .choice {
+      min-height: 44px; padding: 8px 4px; border: 1px solid #dce7df; border-radius: 13px;
+      background: #f8faf8; color: #53665c; font: inherit; font-size: 12px; cursor: pointer;
+    }
+    #trl-focus-checkin-demo .choice[aria-pressed="true"] { border-color: #3d7d5b; background: #e7f2e9; color: #235d40; font-weight: 700; }
+    #trl-focus-checkin-demo .choice:focus-visible, #trl-focus-checkin-demo textarea:focus-visible, #trl-focus-checkin-demo .save:focus-visible { outline: 3px solid rgba(61,125,91,.22); outline-offset: 2px; }
+    #trl-focus-checkin-demo .notice { display: none; margin-top: 12px; padding: 11px 12px; border-radius: 13px; background: #fff3ec; color: #8a5137; font-size: 12px; line-height: 1.55; }
+    #trl-focus-checkin-demo .notice.show { display: block; }
+    #trl-focus-checkin-demo textarea {
+      width: 100%; min-height: 78px; resize: vertical; margin-top: 8px; padding: 11px 12px;
+      border: 1px solid #dce7df; border-radius: 14px; background: #fafcfa; color: #263a30;
+      font: inherit; font-size: 12px; line-height: 1.55;
+    }
+    #trl-focus-checkin-demo .privacy { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 10px; color: #7d8a82; }
+    #trl-focus-checkin-demo .privacy i { width: 13px; height: 13px; }
+    #trl-focus-checkin-demo .save {
+      width: 100%; min-height: 48px; margin-top: 14px; border: 0; border-radius: 15px;
+      background: #316e4f; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 8px 18px rgba(49,110,79,.22);
+    }
+    #trl-focus-checkin-demo .saved { display: none; margin-top: 10px; text-align: center; font-size: 11px; color: #3f7156; }
+    #trl-focus-checkin-demo .saved.show { display: block; }
+    #trl-focus-checkin-demo .rule-note { margin: 11px 0 0; padding-top: 11px; border-top: 1px solid #edf1ed; font-size: 10px; color: #849088; line-height: 1.55; }
+    #trl-focus-checkin-demo .timeline { margin-top: 14px; }
+    #trl-focus-checkin-demo .event { display: grid; grid-template-columns: 42px 14px 1fr; gap: 7px; min-height: 53px; }
+    #trl-focus-checkin-demo .time { padding-top: 2px; font-size: 10px; color: #819087; }
+    #trl-focus-checkin-demo .rail { position: relative; }
+    #trl-focus-checkin-demo .rail::before { content: ""; position: absolute; left: 6px; top: 7px; bottom: -6px; width: 1px; background: #dce6df; }
+    #trl-focus-checkin-demo .event:last-child .rail::before { display: none; }
+    #trl-focus-checkin-demo .dot { position: relative; z-index: 1; width: 13px; height: 13px; border-radius: 50%; background: #8cb49a; border: 3px solid #edf5ef; }
+    #trl-focus-checkin-demo .event-title { font-size: 12px; font-weight: 700; }
+    #trl-focus-checkin-demo .event-copy { margin-top: 3px; font-size: 11px; line-height: 1.45; color: #748179; }
+    #trl-focus-checkin-demo .edit { border: 0; padding: 0; margin-top: 4px; background: transparent; color: #397253; font-size: 11px; cursor: pointer; }
+    #trl-focus-checkin-demo .nav { display: grid; grid-template-columns: repeat(4,1fr); padding: 11px 8px 14px; border-top: 1px solid #e4ebe5; background: rgba(255,255,255,.96); }
+    #trl-focus-checkin-demo .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #839087; font-size: 10px; }
+    #trl-focus-checkin-demo .nav-item i { width: 20px; height: 20px; }
+    #trl-focus-checkin-demo .nav-item.active { color: #316e4f; font-weight: 700; }
+    @media (max-width: 370px) {
+      #trl-focus-checkin-demo { padding-left: 0; padding-right: 0; }
+      #trl-focus-checkin-demo .phone { border-radius: 0; border-left: 0; border-right: 0; }
+      #trl-focus-checkin-demo .content { padding: 11px; }
+      #trl-focus-checkin-demo .card { padding: 14px; }
+      #trl-focus-checkin-demo .choice { font-size: 11px; }
+    }
+  </style>
+  <main class="phone" aria-label="天人律重点状态与今日记录界面">
+    <header class="hero">
+      <div class="eyebrow">今日 · 9月15日</div>
+      <h1>我的重点状态</h1>
+      <p class="sub">用 30 秒记录此刻，帮助明天更懂你的节律。</p>
+      <div class="progress"><i data-lucide="circle-dashed"></i><span id="trl-progress-text">今日尚未记录</span></div>
+    </header>
+    <div class="content">
+      <section class="card" aria-labelledby="trl-observed-title">
+        <div class="card-head"><h2 id="trl-observed-title">系统已观察</h2><span class="label">客观数据</span></div>
+        <div class="observed">
+          <div class="signal"><strong>睡眠略少</strong><span>较个人基线少 36 分钟</span></div>
+          <div class="signal"><strong>活动适中</strong><span>今日 5,842 步</span></div>
+        </div>
+        <p class="source">来源：已连接设备 · 更新于 20:45 · 仅供生活参考</p>
+      </section>
+
+      <section class="card" aria-labelledby="trl-checkin-title">
+        <div class="card-head"><h2 id="trl-checkin-title">现在感觉怎么样？</h2><span class="label">由你记录</span></div>
+        <div class="question">精力</div>
+        <div class="choices" data-group="energy">
+          <button class="choice" aria-pressed="false">偏低</button><button class="choice" aria-pressed="true">一般</button><button class="choice" aria-pressed="false">充足</button>
+        </div>
+        <div class="question">压力感受</div>
+        <div class="choices" data-group="stress">
+          <button class="choice" aria-pressed="true">轻松</button><button class="choice" aria-pressed="false">一般</button><button class="choice" aria-pressed="false">较高</button>
+        </div>
+        <div class="question">身体感受</div>
+        <div class="choices" data-group="body">
+          <button class="choice" aria-pressed="true">舒适</button><button class="choice" aria-pressed="false">有点疲惫</button><button class="choice" data-alert="true" aria-pressed="false">明显不适</button>
+        </div>
+        <div class="notice" id="trl-care-notice">如果不适明显、持续或影响日常生活，建议联系合格的专业人士。本应用不提供医疗诊断。</div>
+
+        <div class="question">今天有什么值得记下？ <span style="font-weight:400;color:#849088">（选填）</span></div>
+        <textarea id="trl-note" maxlength="120" aria-label="今日记录" placeholder="例如：午后有些疲惫，散步后感觉轻松一些"></textarea>
+        <div class="privacy"><i data-lucide="lock-keyhole"></i><span>仅你可见，可随时编辑或删除</span></div>
+        <button class="save" id="trl-save">保存今日记录</button>
+        <div class="saved" id="trl-saved">已保存 · 刚刚，可编辑</div>
+        <p class="rule-note">本次记录不会修改已生成的今日生命参考分；经你授权后，可在下一次规则计算中参与参考。</p>
+      </section>
+
+      <section class="card" aria-labelledby="trl-today-title">
+        <div class="card-head"><h2 id="trl-today-title">今日记录</h2><span class="label">时间线</span></div>
+        <div class="timeline" id="trl-timeline">
+          <div class="event"><div class="time">09:12</div><div class="rail"><div class="dot"></div></div><div><div class="event-title">今日建议已生成</div><div class="event-copy">基于睡眠、活动与今日节律数据</div></div></div>
+          <div class="event"><div class="time">15:30</div><div class="rail"><div class="dot"></div></div><div><div class="event-title">完成一次散步</div><div class="event-copy">设备记录 · 22 分钟</div></div></div>
+        </div>
+      </section>
+    </div>
+    <nav class="nav" aria-label="底部导航预览">
+      <div class="nav-item active"><i data-lucide="house"></i><span>今日</span></div>
+      <div class="nav-item"><i data-lucide="orbit"></i><span>节律</span></div>
+      <div class="nav-item"><i data-lucide="notebook-pen"></i><span>记录</span></div>
+      <div class="nav-item"><i data-lucide="user-round"></i><span>我的</span></div>
+    </nav>
+  </main>
+  <script>
+    (function () {
+      const root = document.getElementById('trl-focus-checkin-demo');
+      root.querySelectorAll('.choices').forEach(function (group) {
+        group.addEventListener('click', function (event) {
+          const button = event.target.closest('.choice');
+          if (!button) return;
+          group.querySelectorAll('.choice').forEach(function (item) { item.setAttribute('aria-pressed', 'false'); });
+          button.setAttribute('aria-pressed', 'true');
+          if (group.dataset.group === 'body') {
+            document.getElementById('trl-care-notice').classList.toggle('show', button.dataset.alert === 'true');
+          }
+        });
+      });
+      document.getElementById('trl-save').addEventListener('click', function () {
+        document.getElementById('trl-saved').classList.add('show');
+        document.getElementById('trl-progress-text').textContent = '今日已记录 1 次';
+        this.textContent = '更新今日记录';
+        if (!document.getElementById('trl-user-event')) {
+          const wrap = document.createElement('div');
+          wrap.className = 'event'; wrap.id = 'trl-user-event';
+          const note = document.getElementById('trl-note').value.trim() || '精力一般 · 压力轻松 · 身体舒适';
+          wrap.innerHTML = '<div class="time">刚刚</div><div class="rail"><div class="dot"></div></div><div><div class="event-title">完成状态记录</div><div class="event-copy"></div><button class="edit" type="button">编辑记录</button></div>';
+          wrap.querySelector('.event-copy').textContent = note;
+          wrap.querySelector('.edit').addEventListener('click', function () { document.getElementById('trl-note').focus(); });
+          document.getElementById('trl-timeline').appendChild(wrap);
+        }
+      });
+      if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+    })();
+  </script>
+</div>

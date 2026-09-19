@@ -178,6 +178,58 @@ void main() {
     );
   });
 
+  testWidgets('Vitality mobile home visual review and check-in',
+      (WidgetTester tester) async {
+    await renderHome(
+      tester,
+      mode: LifeThemeMode.vitality,
+      goldenPath: '../../docs/ui/review/vitality-home-mobile-v4.png',
+    );
+
+    expect(find.text('从清晨开始，照顾今日的自己'), findsOneWidget);
+    expect(find.text('数据不足'), findsOneWidget);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -900));
+    await tester.pumpAndSettle();
+    final Finder meditationButton = find.text('正念冥想');
+    await tester.ensureVisible(meditationButton);
+    await tester.pumpAndSettle();
+    expect(meditationButton, findsOneWidget);
+    await tester.tap(meditationButton);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('未来将与“冥想室”应用打通'), findsOneWidget);
+    await tester.tap(find.text('我知道了'));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -1300));
+    await tester.pumpAndSettle();
+    final Finder saveButton = find.widgetWithText(FilledButton, '记录此刻状态');
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    expect(find.text('今日已记录 1 次'), findsOneWidget);
+    expect(find.text('更新今日记录'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Vitality meditation entry visual review',
+      (WidgetTester tester) async {
+    await renderHome(tester, mode: LifeThemeMode.vitality);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -900));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('正念冥想'));
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byKey(const Key('life-home-review')),
+      matchesGoldenFile(
+        '../../docs/ui/review/vitality-home-meditation-entry-v1.png',
+      ),
+    );
+    expect(find.text('正念冥想'), findsOneWidget);
+    expect(find.text('即将接入'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('narrow Forest home remains usable with enlarged text',
       (WidgetTester tester) async {
     await renderHome(
@@ -185,8 +237,7 @@ void main() {
       mode: LifeThemeMode.forest,
       size: const Size(320, 700),
       textScale: 1.3,
-      goldenPath:
-          '../../docs/ui/review/forest-home-narrow-large-text-v3.png',
+      goldenPath: '../../docs/ui/review/forest-home-narrow-large-text-v3.png',
     );
 
     expect(find.text('五运六气'), findsOneWidget);

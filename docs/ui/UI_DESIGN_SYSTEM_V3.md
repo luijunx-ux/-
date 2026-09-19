@@ -6,6 +6,9 @@
 
 - [Forest Life（森林生命）](FOREST_LIFE_UI_SPEC.md)
 - [Obsidian Life（黑曜生命 / 黑曜科技）](OBSIDIAN_LIFE_UI_SPEC.md)
+- [Vitality Life（悦活生命，第三主题候选）](VITALITY_LIFE_UI_SPEC.md)
+
+> 当前冻结需求的 P0 仍为 Forest Life 与 Obsidian Life 双主题。Vitality Life 作为第三种视觉方向保存，其 Flutter 首页已完成独立视觉审核；是否进入正式发布范围仍需单独调整产品需求基线。
 
 ## 体验原则
 
