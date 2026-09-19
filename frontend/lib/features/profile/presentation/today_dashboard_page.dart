@@ -11,6 +11,7 @@ import 'package:tianrenlu/features/profile/presentation/profile_form_page.dart';
 import 'package:tianrenlu/features/profile/presentation/profile_result_page.dart';
 import 'package:tianrenlu/features/profile/presentation/saved_profiles_page.dart';
 import 'package:tianrenlu/features/profile/presentation/vitality_home_sections.dart';
+import 'package:tianrenlu/features/profile/presentation/vitality_stellar_detail_page.dart';
 import 'package:tianrenlu/features/profile/presentation/vitality_yunqi_detail_page.dart';
 
 class TodayDashboardPage extends StatefulWidget {
@@ -166,8 +167,10 @@ class _TodayDashboardPageState extends State<TodayDashboardPage> {
               ? () => _open(VitalityYunqiDetailPage(
                   profile: profile, birthInput: profile.birthInput!))
               : null,
-          onOpenStellar:
-              canOpen ? () => openProfile(ProfileRhythmSection.zodiac) : null,
+          onOpenStellar: canOpen
+              ? () => _open(VitalityStellarDetailPage(
+                  profile: profile, birthInput: profile.birthInput!))
+              : null,
           onOpenAdvice: canOpen
               ? () => _open(VitalityAiAnalysisPage(
                   apiClient: widget.apiClient,
