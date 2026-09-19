@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:tianrenlu/core/life_theme.dart';
 import 'package:tianrenlu/features/advice/presentation/daily_advice_page.dart';
+import 'package:tianrenlu/features/advice/presentation/vitality_ai_analysis_page.dart';
 import 'package:tianrenlu/features/advice/presentation/advice_history_page.dart';
 import 'package:tianrenlu/features/profile/data/profile_api_client.dart';
 import 'package:tianrenlu/features/profile/domain/profile_models.dart';
@@ -166,7 +167,7 @@ class _TodayDashboardPageState extends State<TodayDashboardPage> {
           onOpenStellar:
               canOpen ? () => openProfile(ProfileRhythmSection.zodiac) : null,
           onOpenAdvice: canOpen
-              ? () => _open(DailyAdvicePage(
+              ? () => _open(VitalityAiAnalysisPage(
                   apiClient: widget.apiClient,
                   birthInput: profile.birthInput!,
                   profileId: profile.id))
