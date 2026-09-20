@@ -230,6 +230,41 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Vitality daily advice expands one category',
+      (WidgetTester tester) async {
+    await renderHome(
+      tester,
+      mode: LifeThemeMode.vitality,
+      size: const Size(390, 1100),
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -1050));
+    await tester.pumpAndSettle();
+    final Finder sleepTile = find.text('睡眠');
+    await tester.ensureVisible(sleepTile);
+    await tester.tap(sleepTile);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('vitality-advice-detail')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('睡眠 · 今日补充建议'), findsOneWidget);
+    expect(find.text('唯一主任务已在上方综合分析中'), findsOneWidget);
+    expect(find.text('完成'), findsOneWidget);
+    expect(find.text('跳过'), findsOneWidget);
+    expect(find.text('调整'), findsOneWidget);
+    expect(find.text('换一个'), findsOneWidget);
+
+    await expectLater(
+      find.byKey(const Key('life-home-review')),
+      matchesGoldenFile(
+        '../../docs/ui/review/vitality-daily-advice-expanded-v1.png',
+      ),
+    );
+    await tester.tap(find.text('完成'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('仅保存在当前页面'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('narrow Forest home remains usable with enlarged text',
       (WidgetTester tester) async {
     await renderHome(

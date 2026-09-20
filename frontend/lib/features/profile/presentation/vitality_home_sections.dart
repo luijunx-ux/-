@@ -392,20 +392,55 @@ class _RhythmEntry extends StatelessWidget {
   }
 }
 
-class _AdvicePanel extends StatelessWidget {
+class _AdvicePanel extends StatefulWidget {
   const _AdvicePanel({required this.onTap});
   final VoidCallback? onTap;
-  static const List<(IconData, String, String)> items =
-      <(IconData, String, String)>[
-    (Icons.restaurant_outlined, '饮食', '保持三餐稳定，按口渴感适量补水。'),
-    (Icons.bedtime_outlined, '睡眠', '今晚提前进入安静节奏。'),
-    (Icons.directions_walk_outlined, '活动', '安排一段轻松步行。'),
-    (Icons.favorite_border_rounded, '情绪', '减少连续信息输入。'),
+
+  @override
+  State<_AdvicePanel> createState() => _AdvicePanelState();
+}
+
+class _AdvicePanelState extends State<_AdvicePanel> {
+  int? _selectedIndex;
+  String? _feedback;
+
+  static const List<_AdviceItem> items = <_AdviceItem>[
+    _AdviceItem(
+      icon: Icons.restaurant_outlined,
+      title: '饮食',
+      summary: '保持三餐稳定，按口渴感适量补水。',
+      action: '先照常吃好下一餐，不因节律术语突然改变饮食。',
+      steps: <String>['在熟悉的进餐时间准备容易执行的一餐。', '吃完后留意饥饿、口渴与舒适感，再决定下一次调整。'],
+      basis: '依据：已审核的通用生活规律；当前没有饮食记录与健康平台数据。',
+    ),
+    _AdviceItem(
+      icon: Icons.bedtime_outlined,
+      title: '睡眠',
+      summary: '今晚提前进入安静节奏。',
+      action: '比平时稍早结束高刺激活动，为入睡留出稳定缓冲。',
+      steps: <String>['睡前降低屏幕亮度，暂停连续信息输入。', '选择一项熟悉的放松活动，困倦时再上床。'],
+      basis: '依据：已审核的通用睡眠卫生建议；当前没有睡眠时长与个人基线。',
+    ),
+    _AdviceItem(
+      icon: Icons.directions_walk_outlined,
+      title: '活动',
+      summary: '安排一段轻松步行。',
+      action: '在方便时进行一小段轻松活动，以体感舒适为准。',
+      steps: <String>['选择安全、熟悉的路线，从短时间开始。', '过程中能自然交谈即可；不适时停止并休息。'],
+      basis: '依据：已审核的通用活动建议；当前没有步数、Readiness 或运动负荷数据。',
+    ),
+    _AdviceItem(
+      icon: Icons.favorite_border_rounded,
+      title: '情绪',
+      summary: '减少连续信息输入。',
+      action: '给自己留一小段不被打扰的时间，先辨认此刻感受。',
+      steps: <String>['暂停新的信息输入，做几次自然呼吸。', '用一句话记下当下感受和最需要被照顾的事情。'],
+      basis: '依据：已审核的通用自我观察提示；不会据此判断心理或医疗状态。',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) => LifePanel(
-        onTap: onTap,
         radius: 20,
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -417,21 +452,39 @@ class _AdvicePanel extends StatelessWidget {
                       .titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 4),
-              const Text('以下为已审核的通用温和建议，不替代专业意见。',
+              const Text('四类建议已合并重复内容。点击一项查看具体做法。',
                   style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 12),
+              _PriorityAction(onTap: widget.onTap),
               const SizedBox(height: 12),
               LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
                 final double width = (constraints.maxWidth - 8) / 2;
                 return Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
-                  for (final item in items)
+                  for (int index = 0; index < items.length; index++)
                     _AdviceTile(
                         width: width,
-                        icon: item.$1,
-                        title: item.$2,
-                        copy: item.$3),
+                        icon: items[index].icon,
+                        title: items[index].title,
+                        copy: items[index].summary,
+                        selected: _selectedIndex == index,
+                        onTap: () => setState(() {
+                              _selectedIndex =
+                                  _selectedIndex == index ? null : index;
+                              _feedback = null;
+                            })),
                 ]);
               }),
+              if (_selectedIndex != null) ...<Widget>[
+                const SizedBox(height: 12),
+                _AdviceDetail(
+                  item: items[_selectedIndex!],
+                  feedback: _feedback,
+                  onFeedback: (String value) =>
+                      setState(() => _feedback = value),
+                  onReset: () => setState(() => _feedback = null),
+                ),
+              ],
               const SizedBox(height: 10),
               _MeditationEntry(onTap: () => _showMeditationPreview(context)),
             ]),
@@ -479,6 +532,213 @@ class _AdvicePanel extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AdviceItem {
+  const _AdviceItem({
+    required this.icon,
+    required this.title,
+    required this.summary,
+    required this.action,
+    required this.steps,
+    required this.basis,
+  });
+  final IconData icon;
+  final String title;
+  final String summary;
+  final String action;
+  final List<String> steps;
+  final String basis;
+}
+
+class _PriorityAction extends StatelessWidget {
+  const _PriorityAction({required this.onTap});
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
+    return Material(
+      color: t.accentSoft.withValues(alpha: .55),
+      borderRadius: BorderRadius.circular(15),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(15),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            child: Row(children: <Widget>[
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .75),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.auto_awesome_rounded, color: t.accent),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('AI 今日优先行动', style: TextStyle(fontSize: 10)),
+                    SizedBox(height: 3),
+                    Text('唯一主任务已在上方综合分析中',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_upward_rounded, color: t.accent),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdviceDetail extends StatelessWidget {
+  const _AdviceDetail({
+    required this.item,
+    required this.feedback,
+    required this.onFeedback,
+    required this.onReset,
+  });
+  final _AdviceItem item;
+  final String? feedback;
+  final ValueChanged<String> onFeedback;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
+    return Container(
+      key: const Key('vitality-advice-detail'),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: t.surface,
+        border: Border.all(color: t.outline),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              color: t.accentSoft.withValues(alpha: .42),
+              padding: const EdgeInsets.all(13),
+              child: Row(children: <Widget>[
+                Icon(item.icon, color: t.accent),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('${item.title} · 今日补充建议',
+                          style: const TextStyle(fontSize: 10)),
+                      const SizedBox(height: 2),
+                      Text(item.summary,
+                          style: const TextStyle(fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                ),
+                const Text('辅助建议', style: TextStyle(fontSize: 10)),
+              ]),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('建议怎么做',
+                        style: TextStyle(color: t.textSecondary, fontSize: 10)),
+                    const SizedBox(height: 5),
+                    Text(item.action,
+                        style: const TextStyle(
+                            fontSize: 16,
+                            height: 1.5,
+                            fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 12),
+                    for (int index = 0; index < item.steps.length; index++)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                width: 23,
+                                height: 23,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: t.accentSoft,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text('${index + 1}',
+                                    style: TextStyle(
+                                        color: t.accent, fontSize: 10)),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                  child: Text(item.steps[index],
+                                      style: const TextStyle(
+                                          fontSize: 11, height: 1.5))),
+                            ]),
+                      ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: t.backgroundBottom.withValues(alpha: .65),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(item.basis,
+                          style: TextStyle(
+                              color: t.textSecondary,
+                              fontSize: 10,
+                              height: 1.5)),
+                    ),
+                    const SizedBox(height: 12),
+                    if (feedback == null)
+                      Wrap(spacing: 6, runSpacing: 6, children: <Widget>[
+                        _FeedbackButton(
+                            label: '完成', onTap: () => onFeedback('已标记完成')),
+                        _FeedbackButton(
+                            label: '跳过', onTap: () => onFeedback('今天已跳过')),
+                        _FeedbackButton(
+                            label: '调整', onTap: () => onFeedback('已记录调整需求')),
+                        _FeedbackButton(
+                            label: '换一个',
+                            onTap: () => onFeedback('替换功能待服务端接入')),
+                      ])
+                    else
+                      Row(children: <Widget>[
+                        Icon(Icons.check_circle_outline_rounded,
+                            color: t.accent, size: 18),
+                        const SizedBox(width: 7),
+                        Expanded(
+                            child: Text('$feedback · 仅保存在当前页面，不影响生命参考分。',
+                                style: const TextStyle(fontSize: 11))),
+                        TextButton(
+                            onPressed: onReset, child: const Text('重新选择')),
+                      ]),
+                  ]),
+            ),
+          ]),
+    );
+  }
+}
+
+class _FeedbackButton extends StatelessWidget {
+  const _FeedbackButton({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(minimumSize: const Size(64, 44)),
+        child: Text(label),
+      );
 }
 
 class _MeditationEntry extends StatelessWidget {
@@ -554,32 +814,51 @@ class _AdviceTile extends StatelessWidget {
       {required this.width,
       required this.icon,
       required this.title,
-      required this.copy});
+      required this.copy,
+      required this.selected,
+      required this.onTap});
   final double width;
   final IconData icon;
   final String title;
   final String copy;
+  final bool selected;
+  final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
     final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
-    return Container(
-      width: width,
-      constraints: const BoxConstraints(minHeight: 124),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          border: Border.all(color: t.outline),
-          borderRadius: BorderRadius.circular(15)),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Icon(icon, color: t.accent),
-            const SizedBox(height: 9),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            Text(copy,
-                style: TextStyle(
-                    color: t.textSecondary, fontSize: 12, height: 1.4)),
-          ]),
+    return Material(
+      color:
+          selected ? t.accentSoft.withValues(alpha: .42) : Colors.transparent,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: selected ? t.accent : t.outline),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(15),
+        child: Container(
+          width: width,
+          constraints: const BoxConstraints(minHeight: 124),
+          padding: const EdgeInsets.all(12),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(children: <Widget>[
+                  Icon(icon, color: t.accent),
+                  const Spacer(),
+                  Text(selected ? '收起' : '查看',
+                      style: TextStyle(color: t.accent, fontSize: 10)),
+                ]),
+                const SizedBox(height: 9),
+                Text(title,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text(copy,
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: 12, height: 1.4)),
+              ]),
+        ),
+      ),
     );
   }
 }
