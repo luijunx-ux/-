@@ -9,7 +9,6 @@ class VitalityHomeSections extends StatefulWidget {
     required this.onOpenYunqi,
     required this.onOpenStellar,
     required this.onOpenAdvice,
-    required this.onOpenHistory,
     required this.onOpenAccount,
     super.key,
   });
@@ -18,7 +17,6 @@ class VitalityHomeSections extends StatefulWidget {
   final VoidCallback? onOpenYunqi;
   final VoidCallback? onOpenStellar;
   final VoidCallback? onOpenAdvice;
-  final VoidCallback onOpenHistory;
   final VoidCallback onOpenAccount;
 
   @override
@@ -27,7 +25,31 @@ class VitalityHomeSections extends StatefulWidget {
 
 class _VitalityHomeSectionsState extends State<VitalityHomeSections> {
   String _energy = '一般';
+  String _stress = '一般';
+  String _body = '舒适';
   bool _recorded = false;
+  String? _savedNote;
+  final TextEditingController _noteController = TextEditingController();
+  final GlobalKey _todayKey = GlobalKey();
+  final GlobalKey _rhythmKey = GlobalKey();
+  final GlobalKey _recordsKey = GlobalKey();
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _scrollTo(GlobalKey key) async {
+    final BuildContext? target = key.currentContext;
+    if (target == null) return;
+    await Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeOutCubic,
+      alignment: .08,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,53 +58,56 @@ class _VitalityHomeSectionsState extends State<VitalityHomeSections> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const _DailyHero(),
+        KeyedSubtree(key: _todayKey, child: const _DailyHero()),
         const SizedBox(height: 14),
         const _LifeStatusPanel(),
         const SizedBox(height: 14),
         _AiAnalysisPanel(onTap: widget.onOpenAdvice),
         const SizedBox(height: 14),
-        LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            final bool stacked = constraints.maxWidth < 350;
-            final Widget yunqi = _RhythmEntry(
-              imageAsset: 'assets/images/vitality_breakfast_v1.jpg',
-              eyebrow: '五运六气 · 专业节律入口',
-              title: '天地节律',
-              tag: '规则结果',
-              summary:
-                  '${widget.profile.wuyunLiuqi.middleMovement} · ${widget.profile.wuyunLiuqi.movementStrength}。结合日常规律进行温和观察。',
-              hint: '查看专业术语 / 通俗解释',
-              accent: tokens.accent,
-              onTap: widget.onOpenYunqi,
-            );
-            final Widget stellar = _RhythmEntry(
-              imageAsset: 'assets/images/vitality_evening_v1.jpg',
-              eyebrow: '星辰节律 · 太阳星座入口',
-              title: '自我观察',
-              tag: '太阳星座',
-              summary:
-                  '${widget.profile.zodiac.sign} · ${widget.profile.zodiac.element}元素。关注专注、沟通与休息边界。',
-              hint: '查看专业术语 / 通俗解释',
-              accent: const Color(0xFF5D5794),
-              onTap: widget.onOpenStellar,
-            );
-            if (stacked) {
-              return Column(children: <Widget>[
-                yunqi,
-                const SizedBox(height: 12),
-                stellar,
-              ]);
-            }
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(child: yunqi),
-                const SizedBox(width: 10),
-                Expanded(child: stellar),
-              ],
-            );
-          },
+        KeyedSubtree(
+          key: _rhythmKey,
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final bool stacked = constraints.maxWidth < 350;
+              final Widget yunqi = _RhythmEntry(
+                imageAsset: 'assets/images/vitality_breakfast_v1.jpg',
+                eyebrow: '五运六气 · 专业节律入口',
+                title: '天地节律',
+                tag: '规则结果',
+                summary:
+                    '${widget.profile.wuyunLiuqi.middleMovement} · ${widget.profile.wuyunLiuqi.movementStrength}。结合日常规律进行温和观察。',
+                hint: '查看专业术语 / 通俗解释',
+                accent: tokens.accent,
+                onTap: widget.onOpenYunqi,
+              );
+              final Widget stellar = _RhythmEntry(
+                imageAsset: 'assets/images/vitality_evening_v1.jpg',
+                eyebrow: '星辰节律 · 太阳星座入口',
+                title: '自我观察',
+                tag: '太阳星座',
+                summary:
+                    '${widget.profile.zodiac.sign} · ${widget.profile.zodiac.element}元素。关注专注、沟通与休息边界。',
+                hint: '查看专业术语 / 通俗解释',
+                accent: const Color(0xFF5D5794),
+                onTap: widget.onOpenStellar,
+              );
+              if (stacked) {
+                return Column(children: <Widget>[
+                  yunqi,
+                  const SizedBox(height: 12),
+                  stellar,
+                ]);
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(child: yunqi),
+                  const SizedBox(width: 10),
+                  Expanded(child: stellar),
+                ],
+              );
+            },
+          ),
         ),
         const Padding(
           padding: EdgeInsets.only(top: 8),
@@ -95,15 +120,35 @@ class _VitalityHomeSectionsState extends State<VitalityHomeSections> {
         const SizedBox(height: 14),
         _AdvicePanel(onTap: widget.onOpenAdvice),
         const SizedBox(height: 14),
-        _FocusCheckIn(
-          energy: _energy,
-          recorded: _recorded,
-          onEnergyChanged: (String value) => setState(() => _energy = value),
-          onSave: () => setState(() => _recorded = true),
+        KeyedSubtree(
+          key: _recordsKey,
+          child: _FocusCheckIn(
+            energy: _energy,
+            stress: _stress,
+            body: _body,
+            recorded: _recorded,
+            noteController: _noteController,
+            savedNote: _savedNote,
+            onEnergyChanged: (String value) => setState(() => _energy = value),
+            onStressChanged: (String value) => setState(() => _stress = value),
+            onBodyChanged: (String value) => setState(() => _body = value),
+            onSave: () => setState(() {
+              _recorded = true;
+              final String note = _noteController.text.trim();
+              _savedNote = note.isEmpty ? null : note;
+            }),
+            onDelete: () => setState(() {
+              _recorded = false;
+              _savedNote = null;
+              _noteController.clear();
+            }),
+          ),
         ),
         const SizedBox(height: 14),
         _BottomNavigation(
-          onHistory: widget.onOpenHistory,
+          onToday: () => _scrollTo(_todayKey),
+          onRhythm: () => _scrollTo(_rhythmKey),
+          onRecords: () => _scrollTo(_recordsKey),
           onAccount: widget.onOpenAccount,
         ),
       ],
@@ -866,13 +911,27 @@ class _AdviceTile extends StatelessWidget {
 class _FocusCheckIn extends StatelessWidget {
   const _FocusCheckIn(
       {required this.energy,
+      required this.stress,
+      required this.body,
       required this.recorded,
+      required this.noteController,
+      required this.savedNote,
       required this.onEnergyChanged,
-      required this.onSave});
+      required this.onStressChanged,
+      required this.onBodyChanged,
+      required this.onSave,
+      required this.onDelete});
   final String energy;
+  final String stress;
+  final String body;
   final bool recorded;
+  final TextEditingController noteController;
+  final String? savedNote;
   final ValueChanged<String> onEnergyChanged;
+  final ValueChanged<String> onStressChanged;
+  final ValueChanged<String> onBodyChanged;
   final VoidCallback onSave;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -899,29 +958,82 @@ class _FocusCheckIn extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(child: _Observed(label: '客观数据', value: '活动暂无数据')),
             ]),
+            const SizedBox(height: 7),
+            Text('来源：健康平台尚未授权 · 不使用示例数值',
+                style: TextStyle(color: t.textSecondary, fontSize: 10)),
             const SizedBox(height: 14),
-            const Text('现在精力感觉怎么样？', style: TextStyle(fontSize: 12)),
-            const SizedBox(height: 8),
-            Row(children: <Widget>[
-              for (final String value in const <String>[
-                '偏低',
-                '一般',
-                '充足'
-              ]) ...<Widget>[
-                if (value != '偏低') const SizedBox(width: 7),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => onEnergyChanged(value),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(44, 44),
-                      backgroundColor: energy == value ? t.accentSoft : null,
-                      side: BorderSide(
-                          color: energy == value ? t.accent : t.outline),
-                    ),
-                    child: Text(value),
-                  ),
+            const Text('现在感觉怎么样？',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text('由你主动记录 · 不会自动生成诊断',
+                style: TextStyle(color: t.textSecondary, fontSize: 10)),
+            const SizedBox(height: 12),
+            _StateChoiceGroup(
+              label: '精力',
+              value: energy,
+              options: const <String>['偏低', '一般', '充足'],
+              onChanged: onEnergyChanged,
+            ),
+            const SizedBox(height: 12),
+            _StateChoiceGroup(
+              label: '压力感受',
+              value: stress,
+              options: const <String>['轻松', '一般', '较高'],
+              onChanged: onStressChanged,
+            ),
+            const SizedBox(height: 12),
+            _StateChoiceGroup(
+              label: '身体感受',
+              value: body,
+              options: const <String>['舒适', '有点疲惫', '明显不适'],
+              onChanged: onBodyChanged,
+            ),
+            if (body == '明显不适') ...<Widget>[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF1E8),
+                  borderRadius: BorderRadius.circular(13),
                 ),
-              ],
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(Icons.info_outline_rounded,
+                        color: Color(0xFF956046), size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '如果不适明显、持续或影响日常生活，建议联系合格的专业人士。本应用不提供医疗诊断。',
+                        style: TextStyle(fontSize: 11, height: 1.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            const Text('今天有什么值得记下？（选填）',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 7),
+            TextField(
+              controller: noteController,
+              maxLength: 120,
+              minLines: 2,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: '例如：午后有些疲惫，散步后感觉轻松一些',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            Row(children: <Widget>[
+              Icon(Icons.lock_outline_rounded,
+                  color: t.textSecondary, size: 14),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text('当前仅保存在页面内，可编辑或删除',
+                    style: TextStyle(color: t.textSecondary, fontSize: 10)),
+              ),
             ]),
             const SizedBox(height: 10),
             SizedBox(
@@ -929,15 +1041,94 @@ class _FocusCheckIn extends StatelessWidget {
                 child: FilledButton(
                     onPressed: onSave,
                     child: Text(recorded ? '更新今日记录' : '记录此刻状态'))),
+            if (recorded) ...<Widget>[
+              const SizedBox(height: 6),
+              Align(
+                alignment: Alignment.center,
+                child: TextButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                  label: const Text('删除这条主观记录'),
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             Divider(height: 1, color: t.outline),
             const SizedBox(height: 10),
-            const _TimelineRow(time: '09:12', text: '今日通用建议已生成'),
-            if (recorded) const _TimelineRow(time: '刚刚', text: '完成一次主观状态记录'),
+            Row(children: <Widget>[
+              const Expanded(
+                child: Text('今日记录',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+              ),
+              Text('时间线',
+                  style: TextStyle(color: t.textSecondary, fontSize: 10)),
+            ]),
+            const SizedBox(height: 7),
+            const _TimelineRow(
+              time: '09:12',
+              title: '今日通用建议已生成',
+              detail: '系统事件 · 未使用健康平台数据',
+            ),
+            if (recorded)
+              _TimelineRow(
+                time: '刚刚',
+                title: '完成状态记录',
+                detail: savedNote ?? '精力$energy · 压力$stress · 身体$body',
+                actionLabel: '编辑记录',
+              ),
             const SizedBox(height: 7),
             Text('本次记录不会修改已经生成的生命参考分。',
                 style: TextStyle(color: t.textSecondary, fontSize: 11)),
           ]),
+    );
+  }
+}
+
+class _StateChoiceGroup extends StatelessWidget {
+  const _StateChoiceGroup({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+  final String label;
+  final String value;
+  final List<String> options;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final LifeThemeTokens t = Theme.of(context).extension<LifeThemeTokens>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 7),
+        Row(
+          children: <Widget>[
+            for (int index = 0; index < options.length; index++) ...<Widget>[
+              if (index > 0) const SizedBox(width: 7),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => onChanged(options[index]),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(44, 44),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    backgroundColor:
+                        value == options[index] ? t.accentSoft : null,
+                    side: BorderSide(
+                        color: value == options[index] ? t.accent : t.outline),
+                  ),
+                  child: Text(options[index],
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
     );
   }
 }
@@ -968,26 +1159,60 @@ class _Observed extends StatelessWidget {
 }
 
 class _TimelineRow extends StatelessWidget {
-  const _TimelineRow({required this.time, required this.text});
+  const _TimelineRow({
+    required this.time,
+    required this.title,
+    required this.detail,
+    this.actionLabel,
+  });
   final String time;
-  final String text;
+  final String title;
+  final String detail;
+  final String? actionLabel;
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(children: <Widget>[
-          SizedBox(
-              width: 40,
-              child: Text(time, style: const TextStyle(fontSize: 10))),
-          const Icon(Icons.circle, size: 9, color: Color(0xFF8DBCA0)),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 11))),
-        ]),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(
+                  width: 40,
+                  child: Text(time, style: const TextStyle(fontSize: 10))),
+              const Icon(Icons.circle, size: 9, color: Color(0xFF8DBCA0)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 3),
+                    Text(detail,
+                        style: const TextStyle(fontSize: 10, height: 1.4)),
+                    if (actionLabel != null) ...<Widget>[
+                      const SizedBox(height: 2),
+                      Text(actionLabel!,
+                          style: const TextStyle(
+                              color: Color(0xFF2E7252), fontSize: 10)),
+                    ],
+                  ],
+                ),
+              ),
+            ]),
       );
 }
 
 class _BottomNavigation extends StatelessWidget {
-  const _BottomNavigation({required this.onHistory, required this.onAccount});
-  final VoidCallback onHistory;
+  const _BottomNavigation({
+    required this.onToday,
+    required this.onRhythm,
+    required this.onRecords,
+    required this.onAccount,
+  });
+  final VoidCallback onToday;
+  final VoidCallback onRhythm;
+  final VoidCallback onRecords;
   final VoidCallback onAccount;
 
   @override
@@ -995,18 +1220,28 @@ class _BottomNavigation extends StatelessWidget {
         radius: 20,
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         child: Row(children: <Widget>[
-          const Expanded(
-              child: _NavItem(
-                  icon: Icons.home_outlined, label: '今日', active: true)),
-          const Expanded(
-              child: _NavItem(icon: Icons.blur_circular, label: '节律')),
           Expanded(
               child: _NavItem(
+                  key: const Key('vitality-nav-today'),
+                  icon: Icons.home_outlined,
+                  label: '今日',
+                  active: true,
+                  onTap: onToday)),
+          Expanded(
+              child: _NavItem(
+                  key: const Key('vitality-nav-rhythm'),
+                  icon: Icons.blur_circular,
+                  label: '节律',
+                  onTap: onRhythm)),
+          Expanded(
+              child: _NavItem(
+                  key: const Key('vitality-nav-records'),
                   icon: Icons.edit_note_outlined,
                   label: '记录',
-                  onTap: onHistory)),
+                  onTap: onRecords)),
           Expanded(
               child: _NavItem(
+                  key: const Key('vitality-nav-account'),
                   icon: Icons.person_outline_rounded,
                   label: '我的',
                   onTap: onAccount)),
@@ -1019,7 +1254,8 @@ class _NavItem extends StatelessWidget {
       {required this.icon,
       required this.label,
       this.active = false,
-      this.onTap});
+      this.onTap,
+      super.key});
   final IconData icon;
   final String label;
   final bool active;

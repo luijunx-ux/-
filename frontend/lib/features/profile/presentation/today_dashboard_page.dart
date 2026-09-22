@@ -177,8 +177,6 @@ class _TodayDashboardPageState extends State<TodayDashboardPage> {
                   birthInput: profile.birthInput!,
                   profileId: profile.id))
               : null,
-          onOpenHistory: () =>
-              _open(AdviceHistoryPage(apiClient: widget.apiClient)),
           onOpenAccount: () => _open(widget.accountPageBuilder()),
         ),
       ];

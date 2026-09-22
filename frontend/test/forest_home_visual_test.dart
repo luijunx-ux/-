@@ -217,6 +217,7 @@ void main() {
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -900));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('正念冥想'));
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, 260));
     await tester.pumpAndSettle();
 
     await expectLater(
@@ -262,6 +263,84 @@ void main() {
     await tester.tap(find.text('完成'));
     await tester.pumpAndSettle();
     expect(find.textContaining('仅保存在当前页面'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Vitality focus check-in records subjective state safely',
+      (WidgetTester tester) async {
+    await renderHome(
+      tester,
+      mode: LifeThemeMode.vitality,
+      size: const Size(390, 1100),
+    );
+    final Finder scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(
+      find.text('现在感觉怎么样？'),
+      650,
+      scrollable: scrollable,
+    );
+    await tester.ensureVisible(find.text('明显不适'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('明显不适'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('建议联系合格的专业人士'), findsOneWidget);
+
+    final Finder noteField = find.byType(TextField);
+    await tester.ensureVisible(noteField);
+    await tester.enterText(noteField, '午后有些疲惫，休息后感觉好一些。');
+    await tester.ensureVisible(find.text('记录此刻状态'));
+    await tester.tap(find.text('记录此刻状态'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('今日已记录 1 次'), findsOneWidget);
+    expect(find.text('更新今日记录'), findsOneWidget);
+    expect(find.text('删除这条主观记录'), findsOneWidget);
+    expect(find.text('午后有些疲惫，休息后感觉好一些。'), findsNWidgets(2));
+    expect(find.textContaining('不会修改已经生成的生命参考分'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('现在感觉怎么样？'));
+    await tester.drag(scrollable, const Offset(0, 150));
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byKey(const Key('life-home-review')),
+      matchesGoldenFile(
+        '../../docs/ui/review/vitality-focus-checkin-expanded-v1.png',
+      ),
+    );
+    await tester.ensureVisible(find.text('删除这条主观记录'));
+    await tester.tap(find.text('删除这条主观记录'));
+    await tester.pumpAndSettle();
+    expect(find.text('今日尚未记录'), findsOneWidget);
+    expect(find.text('删除这条主观记录'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Vitality bottom navigation moves to real home sections',
+      (WidgetTester tester) async {
+    await renderHome(tester, mode: LifeThemeMode.vitality);
+    await tester.ensureVisible(find.byKey(const Key('vitality-nav-records')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('vitality-nav-rhythm')));
+    await tester.pumpAndSettle();
+    expect(find.text('天地节律'), findsOneWidget);
+    expect(tester.getTopLeft(find.text('天地节律')).dy, lessThan(844));
+
+    await tester.ensureVisible(find.byKey(const Key('vitality-nav-records')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('vitality-nav-records')));
+    await tester.pumpAndSettle();
+    expect(find.text('我的重点状态'), findsOneWidget);
+    expect(tester.getTopLeft(find.text('我的重点状态')).dy, lessThan(844));
+
+    await tester.ensureVisible(find.byKey(const Key('vitality-nav-today')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('vitality-nav-today')));
+    await tester.pumpAndSettle();
+    expect(find.text('从清晨开始，照顾今日的自己'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('从清晨开始，照顾今日的自己')).dy,
+      lessThan(844),
+    );
     expect(tester.takeException(), isNull);
   });
 
