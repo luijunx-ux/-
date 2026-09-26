@@ -48,6 +48,14 @@ class Settings(BaseSettings):
             raise ValueError("生产类环境必须配置独立的 JWT 与安全标识密钥")
         if self.redis_url is None:
             raise ValueError("非开发环境必须配置 REDIS_URL")
+        if any(marker in self.database_url.lower() for marker in ("change_me", "replace_with")):
+            raise ValueError("非开发环境必须配置独立的数据库凭据")
+        if not self.app_public_url.lower().startswith("https://"):
+            raise ValueError("非开发环境 APP_PUBLIC_URL 必须使用 HTTPS")
+        if not self.smtp_host or not self.smtp_from_email:
+            raise ValueError("非开发环境必须配置 SMTP_HOST 与 SMTP_FROM_EMAIL")
+        if self.ai_enabled and self.llm_api_key is None:
+            raise ValueError("启用 AI 时必须配置 LLM_API_KEY")
         return self
 
     model_config = SettingsConfigDict(

@@ -1,7 +1,7 @@
 # 天人律 AI 生命节律 Agent APP：项目状态总览
 
 更新时间：2026-08-10
-当前版本：`0.1.0`
+当前版本：`0.3.0-alpha.1`
 当前分支：`main`
 远程仓库：`git@github.com:luijunx-ux/-.git`
 远程同步提交：`f81e2f3`

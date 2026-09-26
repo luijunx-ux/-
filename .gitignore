@@ -40,6 +40,10 @@ build/
 coverage/
 android/.gradle/
 android/local.properties
+android/key.properties
+frontend/android/key.properties
+**/*.jks
+**/*.keystore
 ios/Pods/
 ios/.symlinks/
 macos/Pods/
@@ -53,6 +57,7 @@ artifacts/
 tmp/
 temp/
 data/local/
+infrastructure/backups/
 
 # Test artifacts
 test-results/

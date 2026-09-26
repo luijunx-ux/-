@@ -1,0 +1,6 @@
+# Copy to key.properties and supply values through a protected release environment.
+# Never commit key.properties or the keystore itself.
+storeFile=C:/secure/path/tianrenlu-release.jks
+storePassword=replace_with_secret
+keyAlias=tianrenlu
+keyPassword=replace_with_secret

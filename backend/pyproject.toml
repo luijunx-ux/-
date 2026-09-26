@@ -1,6 +1,6 @@
 [project]
 name = "tianrenlu-backend"
-version = "0.1.0"
+version = "0.3.0-alpha.1"
 description = "天人律 AI 生命节律后端"
 requires-python = ">=3.12,<3.14"
 dependencies = [
@@ -22,7 +22,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "mypy>=1.17,<2",
-  "pytest>=8.4,<9",
+  "pip-audit>=2.10,<3",
+  "pytest>=9.0.3,<10",
   "pytest-asyncio>=1.1,<2",
   "ruff>=0.12,<1",
 ]

@@ -8,9 +8,10 @@ from app.core.config import get_settings
 from app.core.health import check_readiness
 from app.core.logging import configure_logging
 from app.core.observability import RequestObservabilityMiddleware
+from app.core.version import APP_VERSION
 
 configure_logging()
-app = FastAPI(title="天人律 AI 生命节律 API", version="0.1.0")
+app = FastAPI(title="天人律 AI 生命节律 API", version=APP_VERSION)
 app.add_middleware(RequestObservabilityMiddleware)
 if get_settings().app_env.lower() == "development":
     app.add_middleware(

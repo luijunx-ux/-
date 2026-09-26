@@ -1,0 +1,108 @@
+name: tianrenlu
+
+x-backend-environment: &backend-environment
+  APP_ENV: production
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+  REDIS_URL: redis://redis:6379/0
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
+  SAFETY_IDENTIFIER_SECRET: ${SAFETY_IDENTIFIER_SECRET:?SAFETY_IDENTIFIER_SECRET is required}
+  APP_PUBLIC_URL: ${APP_PUBLIC_URL:?APP_PUBLIC_URL is required}
+  SMTP_HOST: ${SMTP_HOST:?SMTP_HOST is required}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_USERNAME: ${SMTP_USERNAME:?SMTP_USERNAME is required}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:?SMTP_PASSWORD is required}
+  SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:?SMTP_FROM_EMAIL is required}
+  SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+  AI_ENABLED: ${AI_ENABLED:-false}
+  LLM_API_KEY: ${LLM_API_KEY:-}
+  LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+  LLM_MODEL: ${LLM_MODEL:-gpt-5.6-terra}
+
+x-backend: &backend
+  build:
+    context: ../..
+    dockerfile: backend/Dockerfile
+  image: ${BACKEND_IMAGE:-tianrenlu-backend:0.3.0-alpha.1}
+  environment: *backend-environment
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks:
+    - private
+
+services:
+  migrate:
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+  api:
+    <<: *backend
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${BACKEND_PORT:-8000}:8000"
+    networks:
+      - private
+      - edge
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)",
+        ]
+      interval: 30s
+      timeout: 3s
+      start_period: 15s
+      retries: 3
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - private
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - private
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  private:
+    internal: true
+  edge:

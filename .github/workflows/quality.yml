@@ -59,10 +59,25 @@ jobs:
         run: ruff check .
       - name: Type check
         run: mypy app
+      - name: Check release version consistency
+        run: python ../scripts/check_release_version.py
+      - name: Audit Python dependencies and generate SBOM
+        run: |
+          mkdir -p ../artifacts
+          python -m pip_audit --local --progress-spinner off \
+            --format cyclonedx-json --output ../artifacts/backend-sbom.json
       - name: Apply database migrations
         run: alembic upgrade head
       - name: Test
         run: pytest
+      - name: Upload backend SBOM
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-sbom
+          path: artifacts/backend-sbom.json
+          if-no-files-found: error
+          retention-days: 14
 
   flutter:
     name: Flutter quality
@@ -97,3 +112,72 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  container:
+    name: Container runtime and recovery
+    runs-on: ubuntu-latest
+    env:
+      BACKEND_IMAGE: tianrenlu-backend:ci
+      POSTGRES_DB: tianrenlu_ci
+      POSTGRES_USER: tianrenlu
+      POSTGRES_PASSWORD: ci-only-database-password
+      DATABASE_URL: postgresql+asyncpg://tianrenlu:ci-only-database-password@postgres:5432/tianrenlu_ci
+      JWT_SECRET_KEY: ci-only-jwt-secret-at-least-32-characters
+      SAFETY_IDENTIFIER_SECRET: ci-only-safety-secret-at-least-32-characters
+      APP_PUBLIC_URL: https://alpha-ci.example.invalid
+      SMTP_HOST: smtp.example.invalid
+      SMTP_USERNAME: ci-only-user
+      SMTP_PASSWORD: ci-only-smtp-password
+      SMTP_FROM_EMAIL: no-reply@example.invalid
+      AI_ENABLED: 'false'
+      BACKEND_PORT: '18000'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build backend image without publishing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          load: true
+          push: false
+          tags: tianrenlu-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Scan backend image for fixable high and critical vulnerabilities
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          image-ref: tianrenlu-backend:ci
+          scanners: vuln
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Validate production compose configuration
+        run: docker compose -f infrastructure/docker/docker-compose.prod.yml config --quiet
+      - name: Start disposable Alpha stack
+        run: docker compose -f infrastructure/docker/docker-compose.prod.yml up -d --no-build
+      - name: Verify migrations, runtime user and readiness
+        run: |
+          test "$(docker inspect --format '{{.Config.User}}' tianrenlu-api-1)" = 'tianrenlu'
+          curl --fail --retry 20 --retry-delay 3 --retry-connrefused \
+            http://127.0.0.1:18000/health/live
+          curl --fail --retry 20 --retry-delay 3 --retry-connrefused \
+            http://127.0.0.1:18000/health/ready
+          test "$(docker inspect --format '{{.State.ExitCode}}' tianrenlu-migrate-1)" = '0'
+      - name: Exercise backup and recovery on disposable data
+        run: |
+          export BACKUP_DIR="$RUNNER_TEMP/tianrenlu-backups"
+          sh infrastructure/scripts/backup-postgres.sh
+          BACKUP_FILE=$(find "$BACKUP_DIR" -type f -name '*.dump' -print -quit)
+          test -n "$BACKUP_FILE"
+          CONFIRM_RESTORE=RESTORE_TIANRENLU \
+            sh infrastructure/scripts/restore-postgres.sh "$BACKUP_FILE"
+          curl --fail --retry 20 --retry-delay 3 --retry-connrefused \
+            http://127.0.0.1:18000/health/ready
+      - name: Show container logs after failure
+        if: failure()
+        run: docker compose -f infrastructure/docker/docker-compose.prod.yml logs --no-color
+      - name: Remove disposable Alpha stack
+        if: always()
+        run: docker compose -f infrastructure/docker/docker-compose.prod.yml down --volumes

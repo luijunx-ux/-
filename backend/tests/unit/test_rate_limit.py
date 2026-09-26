@@ -46,9 +46,44 @@ class RateLimiterTests(IsolatedAsyncioTestCase):
             jwt_secret_key=SecretStr("production-jwt-secret-that-is-long-enough"),
             safety_identifier_secret=SecretStr("production-safety-secret-that-is-long-enough"),
             redis_url="rediss://cache.example.com:6379/0",
+            database_url="postgresql+asyncpg://app:strong-password@db.example.com/tianrenlu",
+            app_public_url="https://app.example.com",
+            smtp_host="smtp.example.com",
+            smtp_from_email="no-reply@example.com",
         )
 
         self.assertEqual(settings.redis_url, "rediss://cache.example.com:6379/0")
+
+    def test_production_rejects_template_database_credentials(self) -> None:
+        with self.assertRaises(ValidationError):
+            Settings(
+                app_env="production",
+                jwt_secret_key=SecretStr("production-jwt-secret-that-is-long-enough"),
+                safety_identifier_secret=SecretStr(
+                    "production-safety-secret-that-is-long-enough"
+                ),
+                redis_url="rediss://cache.example.com:6379/0",
+                database_url="postgresql+asyncpg://app:change_me@db.example.com/tianrenlu",
+                app_public_url="https://app.example.com",
+                smtp_host="smtp.example.com",
+                smtp_from_email="no-reply@example.com",
+            )
+
+    def test_production_rejects_ai_without_model_key(self) -> None:
+        with self.assertRaises(ValidationError):
+            Settings(
+                app_env="production",
+                jwt_secret_key=SecretStr("production-jwt-secret-that-is-long-enough"),
+                safety_identifier_secret=SecretStr(
+                    "production-safety-secret-that-is-long-enough"
+                ),
+                redis_url="rediss://cache.example.com:6379/0",
+                database_url="postgresql+asyncpg://app:strong-password@db.example.com/tianrenlu",
+                app_public_url="https://app.example.com",
+                smtp_host="smtp.example.com",
+                smtp_from_email="no-reply@example.com",
+                ai_enabled=True,
+            )
 
     async def test_memory_limiter_rejects_after_limit(self) -> None:
         limiter = MemorySlidingWindowRateLimiter(limit=2, window_seconds=60)
